@@ -2,6 +2,7 @@ const { chromium } = require('playwright');
 const TurndownService = require('turndown');
 const fs = require('fs').promises;
 const path = require('path');
+const crypto = require('crypto');
 
 const turndownService = new TurndownService({
   headingStyle: 'atx',
@@ -79,11 +80,64 @@ turndownService.addRule('pocketbaseLinks', {
   }
 });
 
+// Cache configuration
+const CACHE_DIR = './cache';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const FORCE_REFRESH = process.argv.includes('--force-refresh') || process.argv.includes('-f');
+
 async function ensureDirectory(dirPath) {
   try {
     await fs.mkdir(dirPath, { recursive: true });
   } catch (error) {
     console.error(`Error creating directory ${dirPath}:`, error);
+  }
+}
+
+function getCacheKey(url) {
+  return crypto.createHash('md5').update(url).digest('hex');
+}
+
+async function getCachedContent(url) {
+  if (FORCE_REFRESH) return null;
+  
+  const cacheKey = getCacheKey(url);
+  const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
+  
+  try {
+    const cacheData = await fs.readFile(cacheFile, 'utf8');
+    const cached = JSON.parse(cacheData);
+    
+    // Check if cache is still valid
+    const now = Date.now();
+    if (now - cached.timestamp < CACHE_DURATION) {
+      console.log(`Using cached content for: ${url}`);
+      return cached.content;
+    } else {
+      console.log(`Cache expired for: ${url}`);
+      return null;
+    }
+  } catch (error) {
+    // Cache file doesn't exist or is invalid
+    return null;
+  }
+}
+
+async function setCachedContent(url, content) {
+  await ensureDirectory(CACHE_DIR);
+  
+  const cacheKey = getCacheKey(url);
+  const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
+  
+  const cacheData = {
+    url: url,
+    timestamp: Date.now(),
+    content: content
+  };
+  
+  try {
+    await fs.writeFile(cacheFile, JSON.stringify(cacheData, null, 2), 'utf8');
+  } catch (error) {
+    console.warn(`Failed to cache content for ${url}:`, error);
   }
 }
 
@@ -111,6 +165,13 @@ async function saveMarkdown(fileName, content) {
 }
 
 async function crawlPage(browser, url, fileName) {
+  // Check cache first
+  const cachedContent = await getCachedContent(url);
+  if (cachedContent) {
+    await saveMarkdown(fileName, cachedContent);
+    return true;
+  }
+
   const page = await browser.newPage();
   try {
     console.log(`Crawling: ${url}`);
@@ -118,6 +179,8 @@ async function crawlPage(browser, url, fileName) {
     
     const content = await extractPageContent(page);
     if (content) {
+      // Cache the raw HTML content
+      await setCachedContent(url, content);
       await saveMarkdown(fileName, content);
       return true;
     } else {
@@ -153,6 +216,11 @@ async function findJsDocLinks(page) {
 
 async function main() {
   await ensureDirectory('./jsdocs');
+  await ensureDirectory(CACHE_DIR);
+  
+  if (FORCE_REFRESH) {
+    console.log('Force refresh enabled - ignoring cache');
+  }
   
   const browser = await chromium.launch({ headless: true });
   
