@@ -1,0 +1,129 @@
+name: Generate PocketBase Documentation
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+  schedule:
+    # Run daily at 2 AM UTC to keep docs up to date
+    - cron: '0 2 * * *'
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright browsers
+      run: npx playwright install chromium
+    
+    - name: Run documentation crawler
+      run: node tools/pocketbase-docs-crawler.js
+    
+    - name: Create documentation archive
+      run: |
+        tar -czf pocketbase-docs.tar.gz jsdocs/
+        zip -r pocketbase-docs.zip jsdocs/
+    
+    - name: Upload markdown documentation as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: pocketbase-js-docs-markdown
+        path: jsdocs/
+        retention-days: 30
+    
+    - name: Upload documentation archive (tar.gz)
+      uses: actions/upload-artifact@v4
+      with:
+        name: pocketbase-js-docs-archive-tar
+        path: pocketbase-docs.tar.gz
+        retention-days: 30
+    
+    - name: Upload documentation archive (zip)
+      uses: actions/upload-artifact@v4
+      with:
+        name: pocketbase-js-docs-archive-zip
+        path: pocketbase-docs.zip
+        retention-days: 30
+    
+    - name: Generate documentation summary
+      run: |
+        echo "## Documentation Generation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Generated documentation files:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        ls -lh jsdocs/ >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Total files: $(ls -1 jsdocs/*.md | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "Archive size (tar.gz): $(du -h pocketbase-docs.tar.gz | cut -f1)" >> $GITHUB_STEP_SUMMARY
+        echo "Archive size (zip): $(du -h pocketbase-docs.zip | cut -f1)" >> $GITHUB_STEP_SUMMARY
+
+  release:
+    needs: generate-docs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: docs-${{ github.run_number }}
+        release_name: PocketBase JS Documentation - Build ${{ github.run_number }}
+        body: |
+          Automated documentation build from PocketBase JavaScript documentation.
+          
+          ## Downloads
+          - 📦 **pocketbase-docs.tar.gz** - Compressed archive (tar.gz format)
+          - 📦 **pocketbase-docs.zip** - Compressed archive (zip format)
+          
+          ## Contents
+          This release contains markdown documentation for all PocketBase JavaScript SDK pages.
+          
+          Generated on: ${{ github.event.head_commit.timestamp }}
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset (tar.gz)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/pocketbase-js-docs-archive-tar/pocketbase-docs.tar.gz
+        asset_name: pocketbase-docs.tar.gz
+        asset_content_type: application/gzip
+    
+    - name: Upload Release Asset (zip)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: artifacts/pocketbase-js-docs-archive-zip/pocketbase-docs.zip
+        asset_name: pocketbase-docs.zip
+        asset_content_type: application/zip
