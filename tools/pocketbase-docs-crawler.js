@@ -5,16 +5,77 @@ const path = require('path');
 
 const turndownService = new TurndownService({
   headingStyle: 'atx',
-  codeBlockStyle: 'fenced'
+  codeBlockStyle: 'indented'  // Use indented code blocks
 });
 
+// Handle div.code-wrapper elements
 turndownService.addRule('codeWrapper', {
   filter: function(node) {
     return node.nodeName === 'DIV' && node.classList && node.classList.contains('code-wrapper');
   },
   replacement: function(content, node) {
     const codeText = node.innerText || node.textContent || '';
-    return '\n```\n' + codeText.trim() + '\n```\n';
+    // Convert to indented code block with 4 spaces per line
+    const indentedCode = codeText.trim().split('\n').map(line => '    ' + line).join('\n');
+    return '\n' + indentedCode + '\n';
+  }
+});
+
+// Handle pre elements (convert to indented code blocks)
+turndownService.addRule('preElements', {
+  filter: 'pre',
+  replacement: function(content, node) {
+    const codeText = node.innerText || node.textContent || '';
+    // Convert to indented code block with 4 spaces per line
+    const indentedCode = codeText.trim().split('\n').map(line => '    ' + line).join('\n');
+    return '\n' + indentedCode + '\n';
+  }
+});
+
+// Override default code block handling to use indented style
+turndownService.addRule('codeBlocks', {
+  filter: function (node) {
+    return (
+      node.nodeName === 'PRE' &&
+      node.firstChild &&
+      node.firstChild.nodeName === 'CODE'
+    )
+  },
+  replacement: function (content, node) {
+    const codeElement = node.firstChild;
+    const codeText = codeElement.innerText || codeElement.textContent || '';
+    // Convert to indented code block with 4 spaces per line
+    const indentedCode = codeText.trim().split('\n').map(line => '    ' + line).join('\n');
+    return '\n' + indentedCode + '\n';
+  }
+});
+
+// Add rule to convert PocketBase JS documentation links to relative markdown links
+turndownService.addRule('pocketbaseLinks', {
+  filter: function(node) {
+    return node.nodeName === 'A' && node.getAttribute('href');
+  },
+  replacement: function(content, node) {
+    let href = node.getAttribute('href');
+    
+    // Convert PocketBase JS documentation links to relative markdown links
+    if (href) {
+      // Match absolute URLs
+      const absoluteMatch = href.match(/^https?:\/\/pocketbase\.io\/docs\/(js-[^\/\#]*)/);
+      if (absoluteMatch) {
+        href = `./${absoluteMatch[1]}.md`;
+      }
+      // Match relative URLs
+      else if (href.startsWith('/docs/js-')) {
+        const relativeMatch = href.match(/^\/docs\/(js-[^\/\#]*)/);
+        if (relativeMatch) {
+          href = `./${relativeMatch[1]}.md`;
+        }
+      }
+    }
+    
+    // Return markdown link
+    return '[' + content + '](' + href + ')';
   }
 });
 
