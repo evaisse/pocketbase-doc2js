@@ -18,7 +18,6 @@
   - [Filesystem](#js-filesystem)
   - [Logging](#js-logging)
 
-
 ---
 
 <a id="js-overview"></a>
@@ -29,15 +28,15 @@ Extend with JavaScript - Overview
 
 Overview
 
-*   [JavaScript engine](#js-overview-javascript-engine)
-    *   [Global objects](#js-overview-global-objects)
-*   [TypeScript declarations and code completion](#js-overview-typescript-declarations-and-code-completion)
-*   [Caveats and limitations](#js-overview-caveats-and-limitations)
-    *   [Handlers scope](#js-overview-handlers-scope)
-    *   [Relative paths](#js-overview-relative-paths)
-    *   [Loading modules](#js-overview-loading-modules)
-    *   [Performance](#js-overview-performance)
-    *   [Engine limitations](#js-overview-engine-limitations)
+- [JavaScript engine](#js-overview-javascript-engine)
+  - [Global objects](#js-overview-global-objects)
+- [TypeScript declarations and code completion](#js-overview-typescript-declarations-and-code-completion)
+- [Caveats and limitations](#js-overview-caveats-and-limitations)
+  - [Handlers scope](#js-overview-handlers-scope)
+  - [Relative paths](#js-overview-relative-paths)
+  - [Loading modules](#js-overview-loading-modules)
+  - [Performance](#js-overview-performance)
+  - [Engine limitations](#js-overview-engine-limitations)
 
 ### [JavaScript engine](#js-overview-javascript-engine)
 
@@ -48,37 +47,37 @@ You can start by creating `*.pb.js` file(s) inside a `pb_hooks` directory next t
 ```javascript
 // pb_hooks/main.pb.js
 
-routerAdd("GET", "/hello/{name}", (e) => {
-    let name = e.request.pathValue("name")
+routerAdd('GET', '/hello/{name}', e => {
+  let name = e.request.pathValue('name')
 
-    return e.json(200, { "message": "Hello " + name })
+  return e.json(200, { message: 'Hello ' + name })
 })
 
-onRecordAfterUpdateSuccess((e) => {
-    console.log("user updated...", e.record.get("email"))
+onRecordAfterUpdateSuccess(e => {
+  console.log('user updated...', e.record.get('email'))
 
-    e.next()
-}, "users")
+  e.next()
+}, 'users')
 ```
 
 _For convenience, when making changes to the files inside `pb_hooks`, the process will automatically restart/reload itself (currently supported only on UNIX based platforms). The `*.pb.js` files are loaded per their filename sort order._
 
 For most parts, the JavaScript APIs are derived from [Go](/docs/go-overview) with 2 main differences:
 
-*   Go exported method and field names are converted to camelCase, for example:  
-    `app.FindRecordById("example", "RECORD_ID")` becomes `$app.findRecordById("example", "RECORD_ID")`.
-*   Errors are thrown as regular JavaScript exceptions and not returned as Go values.
+- Go exported method and field names are converted to camelCase, for example:  
+  `app.FindRecordById("example", "RECORD_ID")` becomes `$app.findRecordById("example", "RECORD_ID")`.
+- Errors are thrown as regular JavaScript exceptions and not returned as Go values.
 
 ##### [Global objects](#js-overview-global-objects)
 
 Below is a list with some of the commonly used global objects that are accessible from everywhere:
 
-*   [`__hooks`](/jsvm/variables/__hooks.html) - The absolute path to the app `pb_hooks` directory.
-*   [`$app`](/jsvm/modules/_app.html) - The current running PocketBase application instance.
-*   [`$apis.*`](/jsvm/modules/_apis.html) - API routing helpers and middlewares.
-*   [`$os.*`](/jsvm/modules/_os.html) - OS level primitives (deleting directories, executing shell commands, etc.).
-*   [`$security.*`](/jsvm/modules/_security.html) - Low level helpers for creating and parsing JWTs, random string generation, AES encryption, etc.
-*   And many more - for all exposed APIs, please refer to the [JSVM reference docs](/jsvm/index.html).
+- [`__hooks`](/jsvm/variables/__hooks.html) - The absolute path to the app `pb_hooks` directory.
+- [`$app`](/jsvm/modules/_app.html) - The current running PocketBase application instance.
+- [`$apis.*`](/jsvm/modules/_apis.html) - API routing helpers and middlewares.
+- [`$os.*`](/jsvm/modules/_os.html) - OS level primitives (deleting directories, executing shell commands, etc.).
+- [`$security.*`](/jsvm/modules/_security.html) - Low level helpers for creating and parsing JWTs, random string generation, AES encryption, etc.
+- And many more - for all exposed APIs, please refer to the [JSVM reference docs](/jsvm/index.html).
 
 ### [TypeScript declarations and code completion](#js-overview-typescript-declarations-and-code-completion)
 
@@ -89,10 +88,10 @@ The types declarations are stored in `pb_data/types.d.ts` file. You can point to
 ```javascript
 /// <reference path="../pb_data/types.d.ts" />
 
-onBootstrap((e) => {
-    e.next()
+onBootstrap(e => {
+  e.next()
 
-    console.log("App initialized!")
+  console.log('App initialized!')
 })
 ```
 
@@ -105,12 +104,12 @@ If after referencing the types your editor still doesn't perform linting, then y
 Each handler function (hook, route, middleware, etc.) is **serialized and executed in its own isolated context as a separate "program"**. This means that you don't have access to custom variables and functions declared outside of the handler scope. For example, the below code will fail:
 
 ```javascript
-const name = "test"
+const name = 'test'
 
-onBootstrap((e) => {
-    e.next()
+onBootstrap(e => {
+  e.next()
 
-    console.log(name) // <-- name will be undefined inside the handler
+  console.log(name) // <-- name will be undefined inside the handler
 })
 ```
 
@@ -119,11 +118,11 @@ The above serialization and isolation context is also the reason why error stack
 One possible workaround for sharing/reusing code across different handlers could be to move and export the reusable code portion as local module and load it with `require()` inside the handler but keep in mind that the loaded modules use a shared registry and mutations should be avoided when possible to prevent concurrency issues:
 
 ```javascript
-onBootstrap((e) => {
-    e.next()
+onBootstrap(e => {
+  e.next()
 
-    const config = require(`${__hooks}/config.js`)
-    console.log(config.name)
+  const config = require(`${__hooks}/config.js`)
+  console.log(config.name)
 })
 ```
 
@@ -138,9 +137,9 @@ Please note that the embedded JavaScript engine is not a Node.js or browser envi
 
 You can load modules either by specifying their local filesystem path or by using their name, which will automatically search in:
 
-*   the current working directory (_affects also relative paths_)
-*   any `node_modules` directory
-*   any parent `node_modules` directory
+- the current working directory (_affects also relative paths_)
+- any `node_modules` directory
+- any parent `node_modules` directory
 
 Currently only CommonJS (CJS) modules are supported and can be loaded with `const x = require(...)`.  
 ECMAScript modules (ESM) can be loaded by first precompiling and transforming your dependencies with a bundler like [rollup](https://rollupjs.org/), [webpack](https://webpack.js.org/), [browserify](https://browserify.org/), etc.
@@ -150,19 +149,19 @@ A common usage of local modules is for loading shared helpers or configuration p
 ```javascript
 // pb_hooks/utils.js
 module.exports = {
-    hello: (name) => {
-        console.log("Hello " + name)
-    }
+  hello: name => {
+    console.log('Hello ' + name)
+  }
 }
 ```
 
 ```javascript
 // pb_hooks/main.pb.js
-onBootstrap((e) => {
-    e.next()
+onBootstrap(e => {
+  e.next()
 
-    const utils = require(`${__hooks}/utils.js`)
-    utils.hello("world")
+  const utils = require(`${__hooks}/utils.js`)
+  utils.hello('world')
 })
 ```
 
@@ -178,12 +177,12 @@ Note that the handlers performance may degrade if you have heavy computational t
 
 We inherit some of the limitations and caveats of the embedded JavaScript engine ([goja](https://github.com/dop251/goja)):
 
-*   Has most of ES6 functionality already implemented but it is not fully spec compliant yet.
-*   No concurrent execution inside a single handler (aka. no `setTimeout`/`setInterval`).
-*   Wrapped Go structural types (such as maps, slices) comes with some peculiarities and do not behave the exact same way as native ECMAScript values (for more details see [goja ToValue](https://pkg.go.dev/github.com/dop251/goja#Runtime.ToValue)).
-*   In relation to the above, DB `json` field values require the use of `get()` and `set()` helpers (_this may change in the future_).
+- Has most of ES6 functionality already implemented but it is not fully spec compliant yet.
+- No concurrent execution inside a single handler (aka. no `setTimeout`/`setInterval`).
+- Wrapped Go structural types (such as maps, slices) comes with some peculiarities and do not behave the exact same way as native ECMAScript values (for more details see [goja ToValue](https://pkg.go.dev/github.com/dop251/goja#Runtime.ToValue)).
+- In relation to the above, DB `json` field values require the use of `get()` and `set()` helpers (_this may change in the future_).
 
-* * *
+---
 
 [Next: Event hooks](#js-event-hooks)
 
@@ -203,13 +202,13 @@ Throwing an error or not calling `e.next()` inside a handler function stops the 
 
 All hook handler functions share the same `function(e){}` signature and expect the user to call `e.next()` if they want to proceed with the execution chain.
 
-*   [App hooks](#js-event-hooks-app-hooks)
-*   [Mailer hooks](#js-event-hooks-mailer-hooks)
-*   [Realtime hooks](#js-event-hooks-realtime-hooks)
-*   [Record model hooks](#js-event-hooks-record-model-hooks)
-*   [Collection model hooks](#js-event-hooks-collection-model-hooks)
-*   [Request hooks](#js-event-hooks-request-hooks)
-*   [Base model hooks](#js-event-hooks-base-model-hooks)
+- [App hooks](#js-event-hooks-app-hooks)
+- [Mailer hooks](#js-event-hooks-mailer-hooks)
+- [Realtime hooks](#js-event-hooks-realtime-hooks)
+- [Record model hooks](#js-event-hooks-record-model-hooks)
+- [Collection model hooks](#js-event-hooks-collection-model-hooks)
+- [Request hooks](#js-event-hooks-request-hooks)
+- [Base model hooks](#js-event-hooks-base-model-hooks)
 
 ### [App hooks](#js-event-hooks-app-hooks)
 
@@ -220,10 +219,10 @@ All hook handler functions share the same `function(e){}` signature and expect t
 Note that attempting to access the database before the `e.next()` call will result in an error.
 
 ```javascript
-onBootstrap((e) => {
-    e.next()
+onBootstrap(e => {
+  e.next()
 
-    // e.app
+  // e.app
 })
 ```
 
@@ -234,10 +233,10 @@ onBootstrap((e) => {
 Calling `e.app.settings()` after `e.next()` returns the new state.
 
 ```javascript
-onSettingsReload((e) => {
-    e.next()
+onSettingsReload(e => {
+  e.next()
 
-    // e.app.settings()
+  // e.app.settings()
 })
 ```
 
@@ -246,10 +245,10 @@ onSettingsReload((e) => {
 `onBackupCreate` is triggered on each `$app.createBackup` call.
 
 ```javascript
-onBackupCreate((e) => {
-    // e.app
-    // e.name    - the name of the backup to create
-    // e.exclude - list of pb_data dir entries to exclude from the backup
+onBackupCreate(e => {
+  // e.app
+  // e.name    - the name of the backup to create
+  // e.exclude - list of pb_data dir entries to exclude from the backup
 })
 ```
 
@@ -258,10 +257,10 @@ onBackupCreate((e) => {
 `onBackupRestore` is triggered before app backup restore (aka. on `$app.restoreBackup` call).
 
 ```javascript
-onBackupRestore((e) => {
-    // e.app
-    // e.name    - the name of the backup to restore
-    // e.exclude - list of dir entries to exclude from the backup
+onBackupRestore(e => {
+  // e.app
+  // e.name    - the name of the backup to restore
+  // e.exclude - list of dir entries to exclude from the backup
 })
 ```
 
@@ -271,9 +270,9 @@ onBackupRestore((e) => {
 Note that the app could be terminated abruptly without awaiting the hook completion.
 
 ```javascript
-onTerminate((e) => {
-    // e.app
-    // e.isRestart
+onTerminate(e => {
+  // e.app
+  // e.isRestart
 })
 ```
 
@@ -286,15 +285,15 @@ onTerminate((e) => {
 It allows intercepting the email message or to use a custom mailer client.
 
 ```javascript
-onMailerSend((e) => {
-    // e.app
-    // e.mailer
-    // e.message
+onMailerSend(e => {
+  // e.app
+  // e.mailer
+  // e.message
 
-    // ex. change the mail subject
-    e.message.subject = "new subject"
+  // ex. change the mail subject
+  e.message.subject = 'new subject'
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -303,17 +302,17 @@ onMailerSend((e) => {
 `onMailerRecordAuthAlertSend` hook is triggered when sending a new device login auth alert email, allowing you to intercept and customize the email message that is being sent.
 
 ```javascript
-onMailerRecordAuthAlertSend((e) => {
-    // e.app
-    // e.mailer
-    // e.message
-    // e.record
-    // e.meta
+onMailerRecordAuthAlertSend(e => {
+  // e.app
+  // e.mailer
+  // e.message
+  // e.record
+  // e.meta
 
-    // ex. change the mail subject
-    e.message.subject = "new subject"
+  // ex. change the mail subject
+  e.message.subject = 'new subject'
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -322,17 +321,17 @@ onMailerRecordAuthAlertSend((e) => {
 `onMailerRecordPasswordResetSend` hook is triggered when sending a password reset email to an auth record, allowing you to intercept and customize the email message that is being sent.
 
 ```javascript
-onMailerRecordPasswordResetSend((e) => {
-    // e.app
-    // e.mailer
-    // e.message
-    // e.record
-    // e.meta
+onMailerRecordPasswordResetSend(e => {
+  // e.app
+  // e.mailer
+  // e.message
+  // e.record
+  // e.meta
 
-    // ex. change the mail subject
-    e.message.subject = "new subject"
+  // ex. change the mail subject
+  e.message.subject = 'new subject'
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -341,17 +340,17 @@ onMailerRecordPasswordResetSend((e) => {
 `onMailerRecordVerificationSend` hook is triggered when sending a verification email to an auth record, allowing you to intercept and customize the email message that is being sent.
 
 ```javascript
-onMailerRecordVerificationSend((e) => {
-    // e.app
-    // e.mailer
-    // e.message
-    // e.record
-    // e.meta
+onMailerRecordVerificationSend(e => {
+  // e.app
+  // e.mailer
+  // e.message
+  // e.record
+  // e.meta
 
-    // ex. change the mail subject
-    e.message.subject = "new subject"
+  // ex. change the mail subject
+  e.message.subject = 'new subject'
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -360,17 +359,17 @@ onMailerRecordVerificationSend((e) => {
 `onMailerRecordEmailChangeSend` hook is triggered when sending a confirmation new address email to an auth record, allowing you to intercept and customize the email message that is being sent.
 
 ```javascript
-onMailerRecordEmailChangeSend((e) => {
-    // e.app
-    // e.mailer
-    // e.message
-    // e.record
-    // e.meta
+onMailerRecordEmailChangeSend(e => {
+  // e.app
+  // e.mailer
+  // e.message
+  // e.record
+  // e.meta
 
-    // ex. change the mail subject
-    e.message.subject = "new subject"
+  // ex. change the mail subject
+  e.message.subject = 'new subject'
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -379,17 +378,17 @@ onMailerRecordEmailChangeSend((e) => {
 `onMailerRecordOTPSend` hook is triggered when sending an OTP email to an auth record, allowing you to intercept and customize the email message that is being sent.
 
 ```javascript
-onMailerRecordOTPSend((e) => {
-    // e.app
-    // e.mailer
-    // e.message
-    // e.record
-    // e.meta
+onMailerRecordOTPSend(e => {
+  // e.app
+  // e.mailer
+  // e.message
+  // e.record
+  // e.meta
 
-    // ex. change the mail subject
-    e.message.subject = "new subject"
+  // ex. change the mail subject
+  e.message.subject = 'new subject'
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -402,13 +401,13 @@ onMailerRecordOTPSend((e) => {
 Any execution after e.next() of a hook handler happens after the client disconnects.
 
 ```javascript
-onRealtimeConnectRequest((e) => {
-    // e.app
-    // e.client
-    // e.idleTimeout
-    // and all RequestEvent fields...
+onRealtimeConnectRequest(e => {
+  // e.app
+  // e.client
+  // e.idleTimeout
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -417,13 +416,13 @@ onRealtimeConnectRequest((e) => {
 `onRealtimeSubscribeRequest` hook is triggered when updating the client subscriptions, allowing you to further validate and modify the submitted change.
 
 ```javascript
-onRealtimeSubscribeRequest((e) => {
-    // e.app
-    // e.client
-    // e.subscriptions
-    // and all RequestEvent fields...
+onRealtimeSubscribeRequest(e => {
+  // e.app
+  // e.client
+  // e.subscriptions
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -432,13 +431,13 @@ onRealtimeSubscribeRequest((e) => {
 `onRealtimeMessageSend` hook is triggered when sending an SSE message to a client.
 
 ```javascript
-onRealtimeMessageSend((e) => {
-    // e.app
-    // e.client
-    // e.message
-    // and all original connect RequestEvent fields...
+onRealtimeMessageSend(e => {
+  // e.app
+  // e.client
+  // e.message
+  // and all original connect RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -455,18 +454,21 @@ If you want to intercept the builtin Web APIs and to access their request body, 
 It could be used for example to redact/hide or add computed temporary Record model props only for the specific request info.
 
 ```javascript
-onRecordEnrich((e) => {
-    // hide one or more fields
-    e.record.hide("role")
+onRecordEnrich(e => {
+  // hide one or more fields
+  e.record.hide('role')
 
-    // add new custom field for registered users
-    if (e.requestInfo.auth?.collection()?.name == "users") {
-        e.record.withCustomData(true) // for security custom props require to be enabled explicitly
-        e.record.set("computedScore", e.record.get("score") * e.requestInfo.auth.get("base"))
-    }
+  // add new custom field for registered users
+  if (e.requestInfo.auth?.collection()?.name == 'users') {
+    e.record.withCustomData(true) // for security custom props require to be enabled explicitly
+    e.record.set(
+      'computedScore',
+      e.record.get('score') * e.requestInfo.auth.get('base')
+    )
+  }
 
-    e.next()
-}, "posts")
+  e.next()
+}, 'posts')
 ```
 
 **[onRecordValidate](#js-event-hooks-onrecordvalidate)**
@@ -477,20 +479,24 @@ onRecordEnrich((e) => {
 
 ```javascript
 // fires for every record
-onRecordValidate((e) => {
-    // e.app
-    // e.record
+onRecordValidate(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordValidate((e) => {
+onRecordValidate(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Record model create hooks](#js-event-hooks-record-model-create-hooks)
@@ -509,20 +515,24 @@ Note that successful execution doesn't guarantee that the Record is persisted in
 
 ```javascript
 // fires for every record
-onRecordCreate((e) => {
-    // e.app
-    // e.record
+onRecordCreate(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordCreate((e) => {
+onRecordCreate(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordCreateExecute](#js-event-hooks-onrecordcreateexecute)**
@@ -540,20 +550,24 @@ Note that successful execution doesn't guarantee that the Record is persisted in
 
 ```javascript
 // fires for every record
-onRecordCreateExecute((e) => {
-    // e.app
-    // e.record
+onRecordCreateExecute(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordCreateExecute((e) => {
+onRecordCreateExecute(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordAfterCreateSuccess](#js-event-hooks-onrecordaftercreatesuccess)**
@@ -566,20 +580,24 @@ Note that when a Record is persisted as part of a transaction, this hook is dela
 
 ```javascript
 // fires for every record
-onRecordAfterCreateSuccess((e) => {
-    // e.app
-    // e.record
+onRecordAfterCreateSuccess(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordAfterCreateSuccess((e) => {
+onRecordAfterCreateSuccess(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordAfterCreateError](#js-event-hooks-onrecordaftercreateerror)**
@@ -588,29 +606,33 @@ onRecordAfterCreateSuccess((e) => {
 
 `onRecordAfterCreateError` is triggered after each failed Record DB create persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.save()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.save()` failure
+- **delayed** on transaction rollback
 
 ```javascript
 // fires for every record
-onRecordAfterCreateError((e) => {
-    // e.app
-    // e.record
-    // e.error
+onRecordAfterCreateError(e => {
+  // e.app
+  // e.record
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordAfterCreateError((e) => {
+onRecordAfterCreateError(
+  e => {
     // e.app
     // e.record
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Record model update hooks](#js-event-hooks-record-model-update-hooks)
@@ -629,20 +651,24 @@ Note that successful execution doesn't guarantee that the Record is persisted in
 
 ```javascript
 // fires for every record
-onRecordUpdate((e) => {
-    // e.app
-    // e.record
+onRecordUpdate(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordUpdate((e) => {
+onRecordUpdate(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordUpdateExecute](#js-event-hooks-onrecordupdateexecute)**
@@ -660,20 +686,24 @@ Note that successful execution doesn't guarantee that the Record is persisted in
 
 ```javascript
 // fires for every record
-onRecordUpdateExecute((e) => {
-    // e.app
-    // e.record
+onRecordUpdateExecute(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordUpdateExecute((e) => {
+onRecordUpdateExecute(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordAfterUpdateSuccess](#js-event-hooks-onrecordafterupdatesuccess)**
@@ -686,20 +716,24 @@ Note that when a Record is persisted as part of a transaction, this hook is dela
 
 ```javascript
 // fires for every record
-onRecordAfterUpdateSuccess((e) => {
-    // e.app
-    // e.record
+onRecordAfterUpdateSuccess(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordAfterUpdateSuccess((e) => {
+onRecordAfterUpdateSuccess(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordAfterUpdateError](#js-event-hooks-onrecordafterupdateerror)**
@@ -708,29 +742,33 @@ onRecordAfterUpdateSuccess((e) => {
 
 `onRecordAfterUpdateError` is triggered after each failed Record DB update persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.save()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.save()` failure
+- **delayed** on transaction rollback
 
 ```javascript
 // fires for every record
-onRecordAfterUpdateError((e) => {
-    // e.app
-    // e.record
-    // e.error
+onRecordAfterUpdateError(e => {
+  // e.app
+  // e.record
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordAfterUpdateError((e) => {
+onRecordAfterUpdateError(
+  e => {
     // e.app
     // e.record
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Record model delete hooks](#js-event-hooks-record-model-delete-hooks)
@@ -749,20 +787,24 @@ Note that successful execution doesn't guarantee that the Record is deleted from
 
 ```javascript
 // fires for every record
-onRecordDelete((e) => {
-    // e.app
-    // e.record
+onRecordDelete(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordDelete((e) => {
+onRecordDelete(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordDeleteExecute](#js-event-hooks-onrecorddeleteexecute)**
@@ -780,20 +822,24 @@ Note that successful execution doesn't guarantee that the Record is deleted from
 
 ```javascript
 // fires for every record
-onRecordDeleteExecute((e) => {
-    // e.app
-    // e.record
+onRecordDeleteExecute(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordDeleteExecute((e) => {
+onRecordDeleteExecute(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordAfterDeleteSuccess](#js-event-hooks-onrecordafterdeletesuccess)**
@@ -806,20 +852,24 @@ Note that when a Record is deleted as part of a transaction, this hook is delaye
 
 ```javascript
 // fires for every record
-onRecordAfterDeleteSuccess((e) => {
-    // e.app
-    // e.record
+onRecordAfterDeleteSuccess(e => {
+  // e.app
+  // e.record
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordAfterDeleteSuccess((e) => {
+onRecordAfterDeleteSuccess(
+  e => {
     // e.app
     // e.record
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordAfterDeleteError](#js-event-hooks-onrecordafterdeleteerror)**
@@ -828,29 +878,33 @@ onRecordAfterDeleteSuccess((e) => {
 
 `onRecordAfterDeleteError` is triggered after each failed Record DB delete persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.delete()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.delete()` failure
+- **delayed** on transaction rollback
 
 ```javascript
 // fires for every record
-onRecordAfterDeleteError((e) => {
-    // e.app
-    // e.record
-    // e.error
+onRecordAfterDeleteError(e => {
+  // e.app
+  // e.record
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" records
-onRecordAfterDeleteError((e) => {
+onRecordAfterDeleteError(
+  e => {
     // e.app
     // e.record
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ### [Collection model hooks](#js-event-hooks-collection-model-hooks)
@@ -867,20 +921,24 @@ If you want to intercept the builtin Web APIs and to access their request body, 
 
 ```javascript
 // fires for every collection
-onCollectionValidate((e) => {
-    // e.app
-    // e.collection
+onCollectionValidate(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionValidate((e) => {
+onCollectionValidate(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Collection mode create hooks](#js-event-hooks-collection-mode-create-hooks)
@@ -899,20 +957,24 @@ Note that successful execution doesn't guarantee that the Collection is persiste
 
 ```javascript
 // fires for every collection
-onCollectionCreate((e) => {
-    // e.app
-    // e.collection
+onCollectionCreate(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionCreate((e) => {
+onCollectionCreate(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionCreateExecute](#js-event-hooks-oncollectioncreateexecute)**
@@ -930,20 +992,24 @@ Note that successful execution doesn't guarantee that the Collection is persiste
 
 ```javascript
 // fires for every collection
-onCollectionCreateExecute((e) => {
-    // e.app
-    // e.collection
+onCollectionCreateExecute(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionCreateExecute((e) => {
+onCollectionCreateExecute(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionAfterCreateSuccess](#js-event-hooks-oncollectionaftercreatesuccess)**
@@ -956,20 +1022,24 @@ Note that when a Collection is persisted as part of a transaction, this hook is 
 
 ```javascript
 // fires for every collection
-onCollectionAfterCreateSuccess((e) => {
-    // e.app
-    // e.collection
+onCollectionAfterCreateSuccess(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionAfterCreateSuccess((e) => {
+onCollectionAfterCreateSuccess(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionAfterCreateError](#js-event-hooks-oncollectionaftercreateerror)**
@@ -978,29 +1048,33 @@ onCollectionAfterCreateSuccess((e) => {
 
 `onCollectionAfterCreateError` is triggered after each failed Collection DB create persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.save()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.save()` failure
+- **delayed** on transaction rollback
 
 ```javascript
 // fires for every collection
-onCollectionAfterCreateError((e) => {
-    // e.app
-    // e.collection
-    // e.error
+onCollectionAfterCreateError(e => {
+  // e.app
+  // e.collection
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionAfterCreateError((e) => {
+onCollectionAfterCreateError(
+  e => {
     // e.app
     // e.collection
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Collection mode update hooks](#js-event-hooks-collection-mode-update-hooks)
@@ -1019,20 +1093,24 @@ Note that successful execution doesn't guarantee that the Collection is persiste
 
 ```javascript
 // fires for every collection
-onCollectionUpdate((e) => {
-    // e.app
-    // e.collection
+onCollectionUpdate(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionUpdate((e) => {
+onCollectionUpdate(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionUpdateExecute](#js-event-hooks-oncollectionupdateexecute)**
@@ -1050,20 +1128,24 @@ Note that successful execution doesn't guarantee that the Collection is persiste
 
 ```javascript
 // fires for every collection
-onCollectionUpdateExecute((e) => {
-    // e.app
-    // e.collection
+onCollectionUpdateExecute(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionUpdateExecute((e) => {
+onCollectionUpdateExecute(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionAfterUpdateSuccess](#js-event-hooks-oncollectionafterupdatesuccess)**
@@ -1076,20 +1158,24 @@ Note that when a Collection is persisted as part of a transaction, this hook is 
 
 ```javascript
 // fires for every collection
-onCollectionAfterUpdateSuccess((e) => {
-    // e.app
-    // e.collection
+onCollectionAfterUpdateSuccess(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionAfterUpdateSuccess((e) => {
+onCollectionAfterUpdateSuccess(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionAfterUpdateError](#js-event-hooks-oncollectionafterupdateerror)**
@@ -1098,29 +1184,33 @@ onCollectionAfterUpdateSuccess((e) => {
 
 `onCollectionAfterUpdateError` is triggered after each failed Collection DB update persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.save()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.save()` failure
+- **delayed** on transaction rollback
 
 ```javascript
 // fires for every collection
-onCollectionAfterUpdateError((e) => {
-    // e.app
-    // e.collection
-    // e.error
+onCollectionAfterUpdateError(e => {
+  // e.app
+  // e.collection
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionAfterUpdateError((e) => {
+onCollectionAfterUpdateError(
+  e => {
     // e.app
     // e.collection
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Collection mode delete hooks](#js-event-hooks-collection-mode-delete-hooks)
@@ -1139,20 +1229,24 @@ Note that successful execution doesn't guarantee that the Collection is deleted 
 
 ```javascript
 // fires for every collection
-onCollectionDelete((e) => {
-    // e.app
-    // e.collection
+onCollectionDelete(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionDelete((e) => {
+onCollectionDelete(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionDeleteExecute](#js-event-hooks-oncollectiondeleteexecute)**
@@ -1170,20 +1264,24 @@ Note that successful execution doesn't guarantee that the Collection is deleted 
 
 ```javascript
 // fires for every collection
-onCollectionDeleteExecute((e) => {
-    // e.app
-    // e.collection
+onCollectionDeleteExecute(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionDeleteExecute((e) => {
+onCollectionDeleteExecute(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionAfterDeleteSuccess](#js-event-hooks-oncollectionafterdeletesuccess)**
@@ -1196,20 +1294,24 @@ Note that when a Collection is deleted as part of a transaction, this hook is de
 
 ```javascript
 // fires for every collection
-onCollectionAfterDeleteSuccess((e) => {
-    // e.app
-    // e.collection
+onCollectionAfterDeleteSuccess(e => {
+  // e.app
+  // e.collection
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionAfterDeleteSuccess((e) => {
+onCollectionAfterDeleteSuccess(
+  e => {
     // e.app
     // e.collection
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onCollectionAfterDeleteError](#js-event-hooks-oncollectionafterdeleteerror)**
@@ -1218,29 +1320,33 @@ onCollectionAfterDeleteSuccess((e) => {
 
 `onCollectionAfterDeleteError` is triggered after each failed Collection DB delete persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.delete()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.delete()` failure
+- **delayed** on transaction rollback
 
 ```javascript
 // fires for every collection
-onCollectionAfterDeleteError((e) => {
-    // e.app
-    // e.collection
-    // e.error
+onCollectionAfterDeleteError(e => {
+  // e.app
+  // e.collection
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onCollectionAfterDeleteError((e) => {
+onCollectionAfterDeleteError(
+  e => {
     // e.app
     // e.collection
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ### [Request hooks](#js-event-hooks-request-hooks)
@@ -1257,18 +1363,19 @@ Note that if you want to hide existing or add new computed Record fields prefer 
 
 ```javascript
 // fires for every collection
-onRecordsListRequest((e) => {
-    // e.app
-    // e.collection
-    // e.records
-    // e.result
-    // and all RequestEvent fields...
+onRecordsListRequest(e => {
+  // e.app
+  // e.collection
+  // e.records
+  // e.result
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onRecordsListRequest((e) => {
+onRecordsListRequest(
+  e => {
     // e.app
     // e.collection
     // e.records
@@ -1276,7 +1383,10 @@ onRecordsListRequest((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordViewRequest](#js-event-hooks-onrecordviewrequest)**
@@ -1287,24 +1397,28 @@ Note that if you want to hide existing or add new computed Record fields prefer 
 
 ```javascript
 // fires for every collection
-onRecordViewRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordViewRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onRecordViewRequest((e) => {
+onRecordViewRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordCreateRequest](#js-event-hooks-onrecordcreaterequest)**
@@ -1314,24 +1428,28 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every collection
-onRecordCreateRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordCreateRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onRecordCreateRequest((e) => {
+onRecordCreateRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordUpdateRequest](#js-event-hooks-onrecordupdaterequest)**
@@ -1341,24 +1459,28 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every collection
-onRecordUpdateRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordUpdateRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onRecordUpdateRequest((e) => {
+onRecordUpdateRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onRecordDeleteRequest](#js-event-hooks-onrecorddeleterequest)**
@@ -1368,24 +1490,28 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every collection
-onRecordDeleteRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordDeleteRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" collections
-onRecordDeleteRequest((e) => {
+onRecordDeleteRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Record auth request hooks](#js-event-hooks-record-auth-request-hooks)
@@ -1396,19 +1522,20 @@ onRecordDeleteRequest((e) => {
 
 ```javascript
 // fires for every auth collection
-onRecordAuthRequest((e) => {
-    // e.app
-    // e.record
-    // e.token
-    // e.meta
-    // e.authMethod
-    // and all RequestEvent fields...
+onRecordAuthRequest(e => {
+  // e.app
+  // e.record
+  // e.token
+  // e.meta
+  // e.authMethod
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordAuthRequest((e) => {
+onRecordAuthRequest(
+  e => {
     // e.app
     // e.record
     // e.token
@@ -1417,7 +1544,10 @@ onRecordAuthRequest((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordAuthRefreshRequest](#js-event-hooks-onrecordauthrefreshrequest)**
@@ -1428,24 +1558,28 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every auth collection
-onRecordAuthRefreshRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordAuthRefreshRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordAuthRefreshRequest((e) => {
+onRecordAuthRefreshRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordAuthWithPasswordRequest](#js-event-hooks-onrecordauthwithpasswordrequest)**
@@ -1456,20 +1590,21 @@ onRecordAuthRefreshRequest((e) => {
 
 ```javascript
 // fires for every auth collection
-onRecordAuthWithPasswordRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record (could be null)
-    // e.identity
-    // e.identityField
-    // e.password
-    // and all RequestEvent fields...
+onRecordAuthWithPasswordRequest(e => {
+  // e.app
+  // e.collection
+  // e.record (could be null)
+  // e.identity
+  // e.identityField
+  // e.password
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordAuthWithPasswordRequest((e) => {
+onRecordAuthWithPasswordRequest(
+  e => {
     // e.app
     // e.collection
     // e.record (could be null)
@@ -1479,7 +1614,10 @@ onRecordAuthWithPasswordRequest((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordAuthWithOAuth2Request](#js-event-hooks-onrecordauthwithoauth2request)**
@@ -1491,22 +1629,23 @@ To assign or link a different existing record model you can change the `e.record
 
 ```javascript
 // fires for every auth collection
-onRecordAuthWithOAuth2Request((e) => {
-    // e.app
-    // e.collection
-    // e.providerName
-    // e.providerClient
-    // e.record (could be null)
-    // e.oauth2User
-    // e.createData
-    // e.isNewRecord
-    // and all RequestEvent fields...
+onRecordAuthWithOAuth2Request(e => {
+  // e.app
+  // e.collection
+  // e.providerName
+  // e.providerClient
+  // e.record (could be null)
+  // e.oauth2User
+  // e.createData
+  // e.isNewRecord
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordAuthWithOAuth2Request((e) => {
+onRecordAuthWithOAuth2Request(
+  e => {
     // e.app
     // e.collection
     // e.providerName
@@ -1518,7 +1657,10 @@ onRecordAuthWithOAuth2Request((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordRequestPasswordResetRequest](#js-event-hooks-onrecordrequestpasswordresetrequest)**
@@ -1529,24 +1671,28 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every auth collection
-onRecordRequestPasswordResetRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordRequestPasswordResetRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordRequestPasswordResetRequest((e) => {
+onRecordRequestPasswordResetRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordConfirmPasswordResetRequest](#js-event-hooks-onrecordconfirmpasswordresetrequest)**
@@ -1557,24 +1703,28 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every auth collection
-onRecordConfirmPasswordResetRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordConfirmPasswordResetRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordConfirmPasswordResetRequest((e) => {
+onRecordConfirmPasswordResetRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordRequestVerificationRequest](#js-event-hooks-onrecordrequestverificationrequest)**
@@ -1585,24 +1735,28 @@ Could be used to additionally validate the loaded request data or implement comp
 
 ```javascript
 // fires for every auth collection
-onRecordRequestVerificationRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordRequestVerificationRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordRequestVerificationRequest((e) => {
+onRecordRequestVerificationRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordConfirmVerificationRequest](#js-event-hooks-onrecordconfirmverificationrequest)**
@@ -1613,24 +1767,28 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every auth collection
-onRecordConfirmVerificationRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // and all RequestEvent fields...
+onRecordConfirmVerificationRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordConfirmVerificationRequest((e) => {
+onRecordConfirmVerificationRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordRequestEmailChangeRequest](#js-event-hooks-onrecordrequestemailchangerequest)**
@@ -1641,18 +1799,19 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every auth collection
-onRecordRequestEmailChangeRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // e.newEmail
-    // and all RequestEvent fields...
+onRecordRequestEmailChangeRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // e.newEmail
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordRequestEmailChangeRequest((e) => {
+onRecordRequestEmailChangeRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
@@ -1660,7 +1819,10 @@ onRecordRequestEmailChangeRequest((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordConfirmEmailChangeRequest](#js-event-hooks-onrecordconfirmemailchangerequest)**
@@ -1671,18 +1833,19 @@ Could be used to additionally validate the request data or implement completely 
 
 ```javascript
 // fires for every auth collection
-onRecordConfirmEmailChangeRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // e.newEmail
-    // and all RequestEvent fields...
+onRecordConfirmEmailChangeRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // e.newEmail
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordConfirmEmailChangeRequest((e) => {
+onRecordConfirmEmailChangeRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
@@ -1690,7 +1853,10 @@ onRecordConfirmEmailChangeRequest((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordRequestOTPRequest](#js-event-hooks-onrecordrequestotprequest)**
@@ -1701,18 +1867,19 @@ onRecordConfirmEmailChangeRequest((e) => {
 
 ```javascript
 // fires for every auth collection
-onRecordRequestOTPRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record (could be null)
-    // e.password
-    // and all RequestEvent fields...
+onRecordRequestOTPRequest(e => {
+  // e.app
+  // e.collection
+  // e.record (could be null)
+  // e.password
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordRequestOTPRequest((e) => {
+onRecordRequestOTPRequest(
+  e => {
     // e.app
     // e.collection
     // e.record (could be null)
@@ -1720,7 +1887,10 @@ onRecordRequestOTPRequest((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 **[onRecordAuthWithOTPRequest](#js-event-hooks-onrecordauthwithotprequest)**
@@ -1729,18 +1899,19 @@ onRecordRequestOTPRequest((e) => {
 
 ```javascript
 // fires for every auth collection
-onRecordAuthWithOTPRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // e.otp
-    // and all RequestEvent fields...
+onRecordAuthWithOTPRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // e.otp
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "managers" auth collections
-onRecordAuthWithOTPRequest((e) => {
+onRecordAuthWithOTPRequest(
+  e => {
     // e.app
     // e.collection
     // e.record
@@ -1748,7 +1919,10 @@ onRecordAuthWithOTPRequest((e) => {
     // and all RequestEvent fields...
 
     e.next()
-}, "users", "managers")
+  },
+  'users',
+  'managers'
+)
 ```
 
 ###### [Batch request hooks](#js-event-hooks-batch-request-hooks)
@@ -1762,12 +1936,12 @@ Could be used to additionally validate or modify the submitted batch requests.
 This hook will also fire the corresponding `onRecordCreateRequest`, `onRecordUpdateRequest`, `onRecordDeleteRequest` hooks, where `e.app` is the batch transactional app.
 
 ```javascript
-onBatchRequest((e) => {
-    // e.app
-    // e.batch
-    // and all RequestEvent fields...
+onBatchRequest(e => {
+  // e.app
+  // e.batch
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1778,16 +1952,16 @@ onBatchRequest((e) => {
 `onFileDownloadRequest` hook is triggered before each API File download request. Could be used to validate or modify the file response before returning it to the client.
 
 ```javascript
-onFileDownloadRequest((e) => {
-    // e.app
-    // e.collection
-    // e.record
-    // e.fileField
-    // e.servedPath
-    // e.servedName
-    // and all RequestEvent fields...
+onFileDownloadRequest(e => {
+  // e.app
+  // e.collection
+  // e.record
+  // e.fileField
+  // e.servedPath
+  // e.servedName
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1797,24 +1971,24 @@ onFileDownloadRequest((e) => {
 
 ```javascript
 // fires for every auth model
-onFileTokenRequest((e) => {
-    // e.app
-    // e.record
-    // e.token
-    // and all RequestEvent fields...
+onFileTokenRequest(e => {
+  // e.app
+  // e.record
+  // e.token
+  // and all RequestEvent fields...
 
-    e.next();
+  e.next()
 })
 
 // fires only for "users"
-onFileTokenRequest((e) => {
-    // e.app
-    // e.record
-    // e.token
-    // and all RequestEvent fields...
+onFileTokenRequest(e => {
+  // e.app
+  // e.record
+  // e.token
+  // and all RequestEvent fields...
 
-    e.next();
-}, "users")
+  e.next()
+}, 'users')
 ```
 
 ###### [Collection request hooks](#js-event-hooks-collection-request-hooks)
@@ -1824,13 +1998,13 @@ onFileTokenRequest((e) => {
 `onCollectionsListRequest` hook is triggered on each API Collections list request. Could be used to validate or modify the response before returning it to the client.
 
 ```javascript
-onCollectionsListRequest((e) => {
-    // e.app
-    // e.collections
-    // e.result
-    // and all RequestEvent fields...
+onCollectionsListRequest(e => {
+  // e.app
+  // e.collections
+  // e.result
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1839,12 +2013,12 @@ onCollectionsListRequest((e) => {
 `onCollectionViewRequest` hook is triggered on each API Collection view request. Could be used to validate or modify the response before returning it to the client.
 
 ```javascript
-onCollectionViewRequest((e) => {
-    // e.app
-    // e.collection
-    // and all RequestEvent fields...
+onCollectionViewRequest(e => {
+  // e.app
+  // e.collection
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1854,12 +2028,12 @@ onCollectionViewRequest((e) => {
 Could be used to additionally validate the request data or implement completely different persistence behavior.
 
 ```javascript
-onCollectionCreateRequest((e) => {
-    // e.app
-    // e.collection
-    // and all RequestEvent fields...
+onCollectionCreateRequest(e => {
+  // e.app
+  // e.collection
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1869,12 +2043,12 @@ onCollectionCreateRequest((e) => {
 Could be used to additionally validate the request data or implement completely different persistence behavior.
 
 ```javascript
-onCollectionUpdateRequest((e) => {
-    // e.app
-    // e.collection
-    // and all RequestEvent fields...
+onCollectionUpdateRequest(e => {
+  // e.app
+  // e.collection
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1884,12 +2058,12 @@ onCollectionUpdateRequest((e) => {
 Could be used to additionally validate the request data or implement completely different delete behavior.
 
 ```javascript
-onCollectionDeleteRequest((e) => {
-    // e.app
-    // e.collection
-    // and all RequestEvent fields...
+onCollectionDeleteRequest(e => {
+  // e.app
+  // e.collection
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1899,12 +2073,12 @@ onCollectionDeleteRequest((e) => {
 Could be used to additionally validate the imported collections or to implement completely different import behavior.
 
 ```javascript
-onCollectionsImportRequest((e) => {
-    // e.app
-    // e.collectionsData
-    // e.deleteMissing
+onCollectionsImportRequest(e => {
+  // e.app
+  // e.collectionsData
+  // e.deleteMissing
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1916,12 +2090,12 @@ onCollectionsImportRequest((e) => {
 Could be used to validate or modify the response before returning it to the client.
 
 ```javascript
-onSettingsListRequest((e) => {
-    // e.app
-    // e.settings
-    // and all RequestEvent fields...
+onSettingsListRequest(e => {
+  // e.app
+  // e.settings
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1931,13 +2105,13 @@ onSettingsListRequest((e) => {
 Could be used to additionally validate the request data or implement completely different persistence behavior.
 
 ```javascript
-onSettingsUpdateRequest((e) => {
-    // e.app
-    // e.oldSettings
-    // e.newSettings
-    // and all RequestEvent fields...
+onSettingsUpdateRequest(e => {
+  // e.app
+  // e.oldSettings
+  // e.newSettings
+  // and all RequestEvent fields...
 
-    e.next()
+  e.next()
 })
 ```
 
@@ -1955,20 +2129,24 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelValidate((e) => {
-    // e.app
-    // e.model
+onModelValidate(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelValidate((e) => {
+onModelValidate(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Base model create hooks](#js-event-hooks-base-model-create-hooks)
@@ -1987,20 +2165,24 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelCreate((e) => {
-    // e.app
-    // e.model
+onModelCreate(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelCreate((e) => {
+onModelCreate(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelCreateExecute](#js-event-hooks-onmodelcreateexecute)**
@@ -2018,20 +2200,24 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelCreateExecute((e) => {
-    // e.app
-    // e.model
+onModelCreateExecute(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelCreateExecute((e) => {
+onModelCreateExecute(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelAfterCreateSuccess](#js-event-hooks-onmodelaftercreatesuccess)**
@@ -2044,51 +2230,59 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelAfterCreateSuccess((e) => {
-    // e.app
-    // e.model
+onModelAfterCreateSuccess(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelAfterCreateSuccess((e) => {
+onModelAfterCreateSuccess(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelAfterCreateError](#js-event-hooks-onmodelaftercreateerror)**
 
 `onModelAfterCreateError` is triggered after each failed Model DB create persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.save()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.save()` failure
+- **delayed** on transaction rollback
 
 For convenience, if you want to listen to only the Record or Collection models events without doing manual type assertion, you can use the equivalent `onRecord*` and `onCollection*` proxy hooks.
 
 ```javascript
 // fires for every model
-onModelAfterCreateError((e) => {
-    // e.app
-    // e.model
-    // e.error
+onModelAfterCreateError(e => {
+  // e.app
+  // e.model
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelAfterCreateError((e) => {
+onModelAfterCreateError(
+  e => {
     // e.app
     // e.model
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Base model update hooks](#js-event-hooks-base-model-update-hooks)
@@ -2107,20 +2301,24 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelUpdate((e) => {
-    // e.app
-    // e.model
+onModelUpdate(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelUpdate((e) => {
+onModelUpdate(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelUpdateExecute](#js-event-hooks-onmodelupdateexecute)**
@@ -2138,20 +2336,24 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelUpdateExecute((e) => {
-    // e.app
-    // e.model
+onModelUpdateExecute(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelUpdateExecute((e) => {
+onModelUpdateExecute(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelAfterUpdateSuccess](#js-event-hooks-onmodelafterupdatesuccess)**
@@ -2164,51 +2366,59 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelAfterUpdateSuccess((e) => {
-    // e.app
-    // e.model
+onModelAfterUpdateSuccess(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelAfterUpdateSuccess((e) => {
+onModelAfterUpdateSuccess(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelAfterUpdateError](#js-event-hooks-onmodelafterupdateerror)**
 
 `onModelAfterUpdateError` is triggered after each failed Model DB update persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.save()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.save()` failure
+- **delayed** on transaction rollback
 
 For convenience, if you want to listen to only the Record or Collection models events without doing manual type assertion, you can use the equivalent `onRecord*` and `onCollection*` proxy hooks.
 
 ```javascript
 // fires for every model
-onModelAfterUpdateError((e) => {
-    // e.app
-    // e.model
-    // e.error
+onModelAfterUpdateError(e => {
+  // e.app
+  // e.model
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelAfterUpdateError((e) => {
+onModelAfterUpdateError(
+  e => {
     // e.app
     // e.model
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 ###### [Base model delete hooks](#js-event-hooks-base-model-delete-hooks)
@@ -2227,20 +2437,24 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelDelete((e) => {
-    // e.app
-    // e.model
+onModelDelete(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelDelete((e) => {
+onModelDelete(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelDeleteExecute](#js-event-hooks-onmodeldeleteexecute)**
@@ -2258,20 +2472,24 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelDeleteExecute((e) => {
-    // e.app
-    // e.model
+onModelDeleteExecute(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelDeleteExecute((e) => {
+onModelDeleteExecute(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelAfterDeleteSuccess](#js-event-hooks-onmodelafterdeletesuccess)**
@@ -2284,54 +2502,62 @@ For convenience, if you want to listen to only the Record or Collection models e
 
 ```javascript
 // fires for every model
-onModelAfterDeleteSuccess((e) => {
-    // e.app
-    // e.model
+onModelAfterDeleteSuccess(e => {
+  // e.app
+  // e.model
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelAfterDeleteSuccess((e) => {
+onModelAfterDeleteSuccess(
+  e => {
     // e.app
     // e.model
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
 **[onModelAfterDeleteError](#js-event-hooks-onmodelafterdeleteerror)**
 
 `onModelAfterDeleteError` is triggered after each failed Model DB delete persistence.
 
-Note that the execution of this hook is either immediate or delayed depending on the error:  
+Note that the execution of this hook is either immediate or delayed depending on the error:
 
-*   **immediate** on `$app.delete()` failure
-*   **delayed** on transaction rollback
+- **immediate** on `$app.delete()` failure
+- **delayed** on transaction rollback
 
 For convenience, if you want to listen to only the Record or Collection models events without doing manual type assertion, you can use the equivalent `onRecord*` and `onCollection*` proxy hooks.
 
 ```javascript
 // fires for every model
-onModelAfterDeleteError((e) => {
-    // e.app
-    // e.model
-    // e.error
+onModelAfterDeleteError(e => {
+  // e.app
+  // e.model
+  // e.error
 
-    e.next()
+  e.next()
 })
 
 // fires only for "users" and "articles" models
-onModelAfterDeleteError((e) => {
+onModelAfterDeleteError(
+  e => {
     // e.app
     // e.model
     // e.error
 
     e.next()
-}, "users", "articles")
+  },
+  'users',
+  'articles'
+)
 ```
 
-* * *
+---
 
 [Prev: Overview](#js-overview) [Next: Routing](#js-routing)
 
@@ -2347,29 +2573,29 @@ Routing
 
 You can register custom routes and middlewares by using the top-level [`routerAdd()`](/jsvm/functions/routerAdd.html) and [`routerUse()`](/jsvm/functions/routerUse.html) functions.
 
-*   [Routes](#js-routing-routes)
-    *   [Registering new routes](#js-routing-registering-new-routes)
-    *   [Path parameters and matching rules](#js-routing-path-parameters-and-matching-rules)
-    *   [Reading path parameters](#js-routing-reading-path-parameters)
-    *   [Retrieving the current auth state](#js-routing-retrieving-the-current-auth-state)
-    *   [Reading query parameters](#js-routing-reading-query-parameters)
-    *   [Reading request headers](#js-routing-reading-request-headers)
-    *   [Writing response headers](#js-routing-writing-response-headers)
-    *   [Retrieving uploaded files](#js-routing-retrieving-uploaded-files)
-    *   [Reading request body](#js-routing-reading-request-body)
-    *   [Writing response body](#js-routing-writing-response-body)
-    *   [Reading the client IP](#js-routing-reading-the-client-ip)
-    *   [Request store](#js-routing-request-store)
-*   [Middlewares](#js-routing-middlewares)
-    *   [Registering middlewares](#js-routing-registering-middlewares)
-    *   [Builtin middlewares](#js-routing-builtin-middlewares)
-    *   [Default globally registered middlewares](#js-routing-default-globally-registered-middlewares)
-*   [Error response](#js-routing-error-response)
-*   [Helpers](#js-routing-helpers)
-    *   [Serving static directory](#js-routing-serving-static-directory)
-    *   [Auth response](#js-routing-auth-response)
-    *   [Enrich record(s)](#js-routing-enrich-records)
-*   [Sending request to custom routes using the SDKs](#js-routing-sending-request-to-custom-routes-using-the-sdks)
+- [Routes](#js-routing-routes)
+  - [Registering new routes](#js-routing-registering-new-routes)
+  - [Path parameters and matching rules](#js-routing-path-parameters-and-matching-rules)
+  - [Reading path parameters](#js-routing-reading-path-parameters)
+  - [Retrieving the current auth state](#js-routing-retrieving-the-current-auth-state)
+  - [Reading query parameters](#js-routing-reading-query-parameters)
+  - [Reading request headers](#js-routing-reading-request-headers)
+  - [Writing response headers](#js-routing-writing-response-headers)
+  - [Retrieving uploaded files](#js-routing-retrieving-uploaded-files)
+  - [Reading request body](#js-routing-reading-request-body)
+  - [Writing response body](#js-routing-writing-response-body)
+  - [Reading the client IP](#js-routing-reading-the-client-ip)
+  - [Request store](#js-routing-request-store)
+- [Middlewares](#js-routing-middlewares)
+  - [Registering middlewares](#js-routing-registering-middlewares)
+  - [Builtin middlewares](#js-routing-builtin-middlewares)
+  - [Default globally registered middlewares](#js-routing-default-globally-registered-middlewares)
+- [Error response](#js-routing-error-response)
+- [Helpers](#js-routing-helpers)
+  - [Serving static directory](#js-routing-serving-static-directory)
+  - [Auth response](#js-routing-auth-response)
+  - [Enrich record(s)](#js-routing-enrich-records)
+- [Sending request to custom routes using the SDKs](#js-routing-sending-request-to-custom-routes-using-the-sdks)
 
 ### [Routes](#js-routing-routes)
 
@@ -2379,17 +2605,22 @@ Every route has a path, handler function and eventually middlewares attached to 
 
 ```javascript
 // register "GET /hello/{name}" route (allowed for everyone)
-routerAdd("GET", "/hello/{name}", (e) => {
-    let name = e.request.pathValue("name")
+routerAdd('GET', '/hello/{name}', e => {
+  let name = e.request.pathValue('name')
 
-    return e.json(200, { "message": "Hello " + name })
+  return e.json(200, { message: 'Hello ' + name })
 })
 
 // register "POST /api/myapp/settings" route (allowed only for authenticated users)
-routerAdd("POST", "/api/myapp/settings", (e) => {
+routerAdd(
+  'POST',
+  '/api/myapp/settings',
+  e => {
     // do something ...
-    return e.json(200, {"success": true})
-}, $apis.requireAuth())
+    return e.json(200, { success: true })
+  },
+  $apis.requireAuth()
+)
 ```
 
 ##### [Path parameters and matching rules](#js-routing-path-parameters-and-matching-rules)
@@ -2428,16 +2659,16 @@ routerAdd("GET", "/static/{$}", ...)
 routerAdd("GET", "/customers/{name}", ...)
 ```
 
-* * *
+---
 
 In the following examples `e` is usually [`core.RequestEvent`](/jsvm/interfaces/core.RequestEvent.html) value.
 
-* * *
+---
 
 ##### [Reading path parameters](#js-routing-reading-path-parameters)
 
 ```javascript
-let id = e.request.pathValue("id")
+let id = e.request.pathValue('id')
 ```
 
 ##### [Retrieving the current auth state](#js-routing-retrieving-the-current-auth-state)
@@ -2469,36 +2700,36 @@ let isSuperuser = info.hasSuperuserAuth()
 ##### [Reading query parameters](#js-routing-reading-query-parameters)
 
 ```javascript
-let search = e.request.url.query().get("search")
+let search = e.request.url.query().get('search')
 
 // or via the parsed request info
-let search = e.requestInfo().query["search"]
+let search = e.requestInfo().query['search']
 ```
 
 ##### [Reading request headers](#js-routing-reading-request-headers)
 
 ```javascript
-let token = e.request.header.get("Some-Header")
+let token = e.request.header.get('Some-Header')
 
 // or via the parsed request info
 // (the header value is always normalized per the @request.headers.* API rules format)
-let token = e.requestInfo().headers["some_header"]
+let token = e.requestInfo().headers['some_header']
 ```
 
 ##### [Writing response headers](#js-routing-writing-response-headers)
 
 ```javascript
-e.response.header().set("Some-Header", "123")
+e.response.header().set('Some-Header', '123')
 ```
 
 ##### [Retrieving uploaded files](#js-routing-retrieving-uploaded-files)
 
 ```javascript
 // retrieve the uploaded files and parse the found multipart data into a ready-to-use []*filesystem.File
-let files = e.findUploadedFiles("document")
+let files = e.findUploadedFiles('document')
 
 // or retrieve the raw single multipart/form-data file and header
-let [mf, mh] = e.request.formFile("document")
+let [mf, mh] = e.request.formFile('document')
 ```
 
 ##### [Reading request body](#js-routing-reading-request-body)
@@ -2515,13 +2746,13 @@ console.log(body.title)
 
 // OR read/scan the request body fields into a typed object
 const data = new DynamicModel({
-    // describe the fields to read (used also as initial values)
-    someTextField:   "",
-    someIntValue:    0,
-    someFloatValue:  -0,
-    someBoolField:   false,
-    someArrayField:  [],
-    someObjectField: {}, // object props are accessible via .get(key)
+  // describe the fields to read (used also as initial values)
+  someTextField: '',
+  someIntValue: 0,
+  someFloatValue: -0,
+  someBoolField: false,
+  someArrayField: [],
+  someObjectField: {} // object props are accessible via .get(key)
 })
 e.bindBody(data)
 console.log(data.sometextField)
@@ -2578,10 +2809,10 @@ The `core.RequestEvent` comes with a local store that you can use to share custo
 
 ```javascript
 // store for the duration of the request
-e.set("someKey", 123)
+e.set('someKey', 123)
 
 // retrieve later
-let val = e.get("someKey") // 123
+let val = e.get('someKey') // 123
 ```
 
 ### [Middlewares](#js-routing-middlewares)
@@ -2595,12 +2826,12 @@ Here is a minimal example of a what global middleware looks like:
 
 ```javascript
 // register a global middleware
-routerUse((e) => {
-    if (e.request.header.get("Something") == "") {
-        throw new BadRequestError("Something header value is missing!")
-    }
+routerUse(e => {
+  if (e.request.header.get('Something') == '') {
+    throw new BadRequestError('Something header value is missing!')
+  }
 
-    return e.next()
+  return e.next()
 })
 ```
 
@@ -2610,27 +2841,34 @@ Below is a slightly more advanced example showing all options and the execution 
 
 ```javascript
 // attach global middleware
-routerUse((e) => {
-    console.log(1)
-    return e.next()
+routerUse(e => {
+  console.log(1)
+  return e.next()
 })
 
 // attach global middleware with a custom priority
-routerUse(new Middleware((e) => {
-  console.log(2)
-  return e.next()
-}, -1))
+routerUse(
+  new Middleware(e => {
+    console.log(2)
+    return e.next()
+  }, -1)
+)
 
 // attach middleware to a single route
 //
 // "GET /hello" should print the sequence: 2,1,3,4
-routerAdd("GET", "/hello", (e) => {
+routerAdd(
+  'GET',
+  '/hello',
+  e => {
     console.log(4)
-    return e.string(200, "Hello!")
-}, (e) => {
+    return e.string(200, 'Hello!')
+  },
+  e => {
     console.log(3)
     return e.next()
-})
+  }
+)
 ```
 
 ##### [Builtin middlewares](#js-routing-builtin-middlewares)
@@ -2668,24 +2906,24 @@ $apis.skipSuccessActivityLog()
 
 The below list is mostly useful for users that may want to plug their own custom middlewares before/after the priority of the default global ones, for example: registering a custom auth loader before the rate limiter with `-1001` so that the rate limit can be applied properly based on the loaded auth state.
 
-All PocketBase applications have the below internal middlewares registered out of the box (_sorted by their priority_):  
+All PocketBase applications have the below internal middlewares registered out of the box (_sorted by their priority_):
 
-*   **WWW redirect** (id: pbWWWRedirect, priority: -99999)  
-    _Performs www -> non-www redirect(s) if the request host matches with one of the values in certificate host policy._
-*   **CORS** (id: pbCors, priority: -1041)  
-    _By default all origins are allowed (PocketBase is stateless and doesn't rely on cookies) but this can be configured with the `--origins` flag._
-*   **Activity logger** (id: pbActivityLogger, priority: -1040)  
-    _Saves request information into the logs auxiliary database._
-*   **Auto panic recover** (id: pbPanicRecover, priority: -1030)  
-    _Default panic-recover handler._
-*   **Auth token loader** (id: pbLoadAuthToken, priority: -1020)  
-    _Loads the auth token from the `Authorization` header and populates the related auth record into the request event (aka. `e.auth`)._
-*   **Security response headers** (id: pbSecurityHeaders, priority: -1010)  
-    _Adds default common security headers (`X-XSS-Protection`, `X-Content-Type-Options`, `X-Frame-Options`) to the response (can be overwritten by other middlewares or from inside the route action)._
-*   **Rate limit** (id: pbRateLimit, priority: -1000)  
-    _Rate limits client requests based on the configured app settings (it does nothing if the rate limit option is not enabled)._
-*   **Body limit** (id: pbBodyLimit, priority: -990)  
-    _Applies a default max ~32MB request body limit for all custom routes ( system record routes have dynamic body size limit based on their collection field types). Can be overwritten on group/route level by simply rebinding the `$apis.bodyLimit(limitBytes)` middleware._
+- **WWW redirect** (id: pbWWWRedirect, priority: -99999)  
+  _Performs www -> non-www redirect(s) if the request host matches with one of the values in certificate host policy._
+- **CORS** (id: pbCors, priority: -1041)  
+  _By default all origins are allowed (PocketBase is stateless and doesn't rely on cookies) but this can be configured with the `--origins` flag._
+- **Activity logger** (id: pbActivityLogger, priority: -1040)  
+  _Saves request information into the logs auxiliary database._
+- **Auto panic recover** (id: pbPanicRecover, priority: -1030)  
+  _Default panic-recover handler._
+- **Auth token loader** (id: pbLoadAuthToken, priority: -1020)  
+  _Loads the auth token from the `Authorization` header and populates the related auth record into the request event (aka. `e.auth`)._
+- **Security response headers** (id: pbSecurityHeaders, priority: -1010)  
+  _Adds default common security headers (`X-XSS-Protection`, `X-Content-Type-Options`, `X-Frame-Options`) to the response (can be overwritten by other middlewares or from inside the route action)._
+- **Rate limit** (id: pbRateLimit, priority: -1000)  
+  _Rate limits client requests based on the configured app settings (it does nothing if the rate limit option is not enabled)._
+- **Body limit** (id: pbBodyLimit, priority: -990)  
+  _Applies a default max ~32MB request body limit for all custom routes ( system record routes have dynamic body size limit based on their collection field types). Can be overwritten on group/route level by simply rebinding the `$apis.bodyLimit(limitBytes)` middleware._
 
 ### [Error response](#js-routing-error-response)
 
@@ -2696,17 +2934,17 @@ To make it easier returning formatted json error responses, PocketBase provides 
 
 ```javascript
 // construct ApiError with custom status code and validation data error
-throw new ApiError(500, "something went wrong", {
-    "title": new ValidationError("invalid_title", "Invalid or missing title"),
+throw new ApiError(500, 'something went wrong', {
+  title: new ValidationError('invalid_title', 'Invalid or missing title')
 })
 
 // if message is empty string, a default one will be set
-throw new BadRequestError(optMessage, optData)      // 400 ApiError
-throw new UnauthorizedError(optMessage, optData)    // 401 ApiError
-throw new ForbiddenError(optMessage, optData)       // 403 ApiError
-throw new NotFoundError(optMessage, optData)        // 404 ApiError
+throw new BadRequestError(optMessage, optData) // 400 ApiError
+throw new UnauthorizedError(optMessage, optData) // 401 ApiError
+throw new ForbiddenError(optMessage, optData) // 403 ApiError
+throw new NotFoundError(optMessage, optData) // 404 ApiError
 throw new TooManyrequestsError(optMessage, optData) // 429 ApiError
-throw new InternalServerError(optMessage, optData)  // 500 ApiError
+throw new InternalServerError(optMessage, optData) // 500 ApiError
 ```
 
 ### [Helpers](#js-routing-helpers)
@@ -2719,7 +2957,11 @@ Expects the route to have a `{path...}` wildcard parameter.
 
 ```javascript
 // serves static files from the provided dir (if exists)
-routerAdd("GET", "/{path...}", $apis.static($os.dirFS("/path/to/public"), false))
+routerAdd(
+  'GET',
+  '/{path...}',
+  $apis.static($os.dirFS('/path/to/public'), false)
+)
 ```
 
 ##### [Auth response](#js-routing-auth-response)
@@ -2748,19 +2990,25 @@ routerAdd("POST", "/phone-login", (e) => {
 
 [`$apis.enrichRecord()`](/jsvm/functions/_apis.enrichRecord.html) and [`$apis.enrichRecords()`](/jsvm/functions/_apis.enrichRecords.html) helpers parses the request context and enrich the provided record(s) by:
 
-*   expands relations (if `defaultExpands` and/or `?expand` query parameter is set)
-*   ensures that the emails of the auth record and its expanded auth relations are visible only for the current logged superuser, record owner or record with manage access
+- expands relations (if `defaultExpands` and/or `?expand` query parameter is set)
+- ensures that the emails of the auth record and its expanded auth relations are visible only for the current logged superuser, record owner or record with manage access
 
 These helpers are also responsible for triggering the `onRecordEnrich` hook events.
 
 ```javascript
-routerAdd("GET", "/custom-article", (e) => {
-    let records = e.app.findRecordsByFilter("article", "status = 'active'", "-created", 40, 0)
+routerAdd('GET', '/custom-article', e => {
+  let records = e.app.findRecordsByFilter(
+    'article',
+    "status = 'active'",
+    '-created',
+    40,
+    0
+  )
 
-    // enrich the records with the "categories" relation as default expand
-    $apis.enrichRecords(e, records, "categories")
+  // enrich the records with the "categories" relation as default expand
+  $apis.enrichRecords(e, records, 'categories')
 
-    return e.json(200, records)
+  return e.json(200, records)
 })
 ```
 
@@ -2773,15 +3021,15 @@ JavaScript
 Dart
 
 ```javascript
-import PocketBase from 'pocketbase';
+import PocketBase from 'pocketbase'
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase('http://127.0.0.1:8090')
 
-await pb.send("/hello", {
-    // for other options check
-    // https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
-    query: { "abc": 123 },
-});
+await pb.send('/hello', {
+  // for other options check
+  // https://developer.mozilla.org/en-US/docs/Web/API/fetch#options
+  query: { abc: 123 }
+})
 ```
 
 ```javascript
@@ -2792,7 +3040,7 @@ final pb = PocketBase('http://127.0.0.1:8090');
 await pb.send("/hello", query: { "abc": 123 })
 ```
 
-* * *
+---
 
 [Prev: Event hooks](#js-event-hooks) [Next: Database](#js-database)
 
@@ -2812,90 +3060,96 @@ Database
 
 For more details and examples how to interact with Record and Collection models programmatically you could also check [Collection operations](#js-collections) and [Record operations](#js-records) sections.
 
-*   [Executing queries](#js-database-executing-queries)
-*   [Binding parameters](#js-database-binding-parameters)
-*   [Query builder](#js-database-query-builder)
-    *   [select(), andSelect(), distinct()](#js-database-select-andselect-distinct)
-    *   [from()](#js-database-from)
-    *   [join()](#js-database-join)
-    *   [where(), andWhere(), orWhere()](#js-database-where-andwhere-orwhere)
-    *   [orderBy(), andOrderBy()](#js-database-orderby-andorderby)
-    *   [groupBy(), andGroupBy()](#js-database-groupby-andgroupby)
-    *   [having(), andHaving(), orHaving()](#js-database-having-andhaving-orhaving)
-    *   [limit()](#js-database-limit)
-    *   [offset()](#js-database-offset)
-*   [Transaction](#js-database-transaction)
+- [Executing queries](#js-database-executing-queries)
+- [Binding parameters](#js-database-binding-parameters)
+- [Query builder](#js-database-query-builder)
+  - [select(), andSelect(), distinct()](#js-database-select-andselect-distinct)
+  - [from()](#js-database-from)
+  - [join()](#js-database-join)
+  - [where(), andWhere(), orWhere()](#js-database-where-andwhere-orwhere)
+  - [orderBy(), andOrderBy()](#js-database-orderby-andorderby)
+  - [groupBy(), andGroupBy()](#js-database-groupby-andgroupby)
+  - [having(), andHaving(), orHaving()](#js-database-having-andhaving-orhaving)
+  - [limit()](#js-database-limit)
+  - [offset()](#js-database-offset)
+- [Transaction](#js-database-transaction)
 
 ### [Executing queries](#js-database-executing-queries)
 
 To execute DB queries you can start with the `newQuery("...")` statement and then call one of:
 
-*   `[execute()](#js-database-execute)` \- for any query statement that is not meant to retrieve data:
-    
-    ```javascript
-    $app.db()
-        .newQuery("DELETE FROM articles WHERE status = 'archived'")
-        .execute() // throw an error on db failure
-    ```
-    
-*   `[one()](#js-database-execute-one)` \- to populate a single row into `DynamicModel` object:
-    
-    ```javascript
-    const result = new DynamicModel({
-        // describe the shape of the data (used also as initial values)
-        // the keys cannot start with underscore and must be a valid Go struct field name
-        "id":     "",
-        "status": false,
-        "age":    0, // use -0 for a float value
-        "roles":  [], // serialized json db arrays are decoded as plain arrays
+- `[execute()](#js-database-execute)` \- for any query statement that is not meant to retrieve data:
+
+  ```javascript
+  $app.db().newQuery("DELETE FROM articles WHERE status = 'archived'").execute() // throw an error on db failure
+  ```
+
+- `[one()](#js-database-execute-one)` \- to populate a single row into `DynamicModel` object:
+
+  ```javascript
+  const result = new DynamicModel({
+    // describe the shape of the data (used also as initial values)
+    // the keys cannot start with underscore and must be a valid Go struct field name
+    id: '',
+    status: false,
+    age: 0, // use -0 for a float value
+    roles: [] // serialized json db arrays are decoded as plain arrays
+  })
+
+  $app
+    .db()
+    .newQuery('SELECT id, status, age, roles FROM users WHERE id=1')
+    .one(result) // throw an error on db failure or missing row
+
+  console.log(result.id)
+  ```
+
+- `[all()](#js-database-execute-all)` \- to populate multiple rows into an array of objects (note that the array must be created with `arrayOf`):
+
+  ```javascript
+  const result = arrayOf(
+    new DynamicModel({
+      // describe the shape of the data (used also as initial values)
+      // the keys cannot start with underscore and must be a valid Go struct field name
+      id: '',
+      status: false,
+      age: 0, // use -0 for a float value
+      roles: [] // serialized json db arrays are decoded as plain arrays
     })
-    
-    $app.db()
-        .newQuery("SELECT id, status, age, roles FROM users WHERE id=1")
-        .one(result) // throw an error on db failure or missing row
-    
-    console.log(result.id)
-    ```
-    
-*   `[all()](#js-database-execute-all)` \- to populate multiple rows into an array of objects (note that the array must be created with `arrayOf`):
-    
-    ```javascript
-    const result = arrayOf(new DynamicModel({
-        // describe the shape of the data (used also as initial values)
-        // the keys cannot start with underscore and must be a valid Go struct field name
-        "id":     "",
-        "status": false,
-        "age":    0, // use -0 for a float value
-        "roles":  [], // serialized json db arrays are decoded as plain arrays
-    }))
-    
-    $app.db()
-        .newQuery("SELECT id, status, age, roles FROM users LIMIT 100")
-        .all(result) // throw an error on db failure
-    
-    if (result.length > 0) {
-        console.log(result[0].id)
-    }
-    ```
-    
+  )
+
+  $app
+    .db()
+    .newQuery('SELECT id, status, age, roles FROM users LIMIT 100')
+    .all(result) // throw an error on db failure
+
+  if (result.length > 0) {
+    console.log(result[0].id)
+  }
+  ```
 
 ### [Binding parameters](#js-database-binding-parameters)
 
 To prevent SQL injection attacks, you should use named parameters for any expression value that comes from user input. This could be done using the named `{:paramName}` placeholders in your SQL statement and then define the parameter values for the query with `bind(params)`. For example:
 
 ```javascript
-const result = arrayOf(new DynamicModel({
-    "name":    "",
-    "created": "",
-}))
+const result = arrayOf(
+  new DynamicModel({
+    name: '',
+    created: ''
+  })
+)
 
-$app.db()
-    .newQuery("SELECT name, created FROM posts WHERE created >= {:from} and created <= {:to}")
-    .bind({
-        "from": "2023-06-25 00:00:00.000Z",
-        "to":   "2023-06-28 23:59:59.999Z",
-    })
-    .all(result)
+$app
+  .db()
+  .newQuery(
+    'SELECT name, created FROM posts WHERE created >= {:from} and created <= {:to}'
+  )
+  .bind({
+    from: '2023-06-25 00:00:00.000Z',
+    to: '2023-06-28 23:59:59.999Z'
+  })
+  .all(result)
 
 console.log(result.length)
 ```
@@ -2906,18 +3160,21 @@ Instead of writing plain SQLs, you can also compose SQL statements programmatica
 Every SQL keyword has a corresponding query building method. For example, `SELECT` corresponds to `select()`, `FROM` corresponds to `from()`, `WHERE` corresponds to `where()`, and so on.
 
 ```javascript
-const result = arrayOf(new DynamicModel({
-    "id":    "",
-    "email": "",
-}))
+const result = arrayOf(
+  new DynamicModel({
+    id: '',
+    email: ''
+  })
+)
 
-$app.db()
-    .select("id", "email")
-    .from("users")
-    .andWhere($dbx.like("email", "example.com"))
-    .limit(100)
-    .orderBy("created ASC")
-    .all(result)
+$app
+  .db()
+  .select('id', 'email')
+  .from('users')
+  .andWhere($dbx.like('email', 'example.com'))
+  .limit(100)
+  .orderBy('created ASC')
+  .all(result)
 ```
 
 ##### [select(), andSelect(), distinct()](#js-database-select-andselect-distinct)
@@ -2949,9 +3206,9 @@ $app.db()
 
 The `join(type, table, on)` method specifies a `JOIN` clause. It takes 3 parameters:
 
-*   `type` - join type string like `INNER JOIN`, `LEFT JOIN`, etc.
-*   `table` - the name of the table to be joined
-*   `on` - optional `dbx.Expression` as an `ON` clause
+- `type` - join type string like `INNER JOIN`, `LEFT JOIN`, etc.
+- `table` - the name of the table to be joined
+- `on` - optional `dbx.Expression` as an `ON` clause
 
 For convenience, you can also use the shortcuts `innerJoin(table, on)`, `leftJoin(table, on)`, `rightJoin(table, on)` to specify `INNER JOIN`, `LEFT JOIN` and `RIGHT JOIN`, respectively.
 
@@ -3001,114 +3258,158 @@ $app.db()
 
 The following `dbx.Expression` methods are available:
 
-*   `[$dbx.exp(raw, optParams)](#js-database-dbx-expraw-optparams)`  
-    Generates an expression with the specified raw query fragment. Use the `optParams` to bind parameters to the expression.```javascript
-    $dbx.exp("status = 'public'")
-    $dbx.exp("total > {:min} AND total < {:max}", { min: 10, max: 30 })
-    ```
-    
-*   `[$dbx.hashExp(pairs)](#js-database-dbx-hashexppairs)`  
-    Generates a hash expression from a map whose keys are DB column names which need to be filtered according to the corresponding values.```javascript
-    // slug = "example" AND active IS TRUE AND tags in ("tag1", "tag2", "tag3") AND parent IS NULL
-    $dbx.hashExp({
-        slug:   "example",
-        active: true,
-        tags:   ["tag1", "tag2", "tag3"],
-        parent: null,
-    })
-    ```
-    
-*   `[$dbx.not(exp)](#js-database-dbx-notexp)`  
-    Negates a single expression by wrapping it with `NOT()`.```javascript
-    // NOT(status = 1)
-    $dbx.not($dbx.exp("status = 1"))
-    ```
-    
-*   `[$dbx.and(...exps)](#js-database-dbx-and-exps)`  
-    Creates a new expression by concatenating the specified ones with `AND`.```javascript
-    // (status = 1 AND username like "%john%")
-    $dbx.and($dbx.exp("status = 1"), $dbx.like("username", "john"))
-    ```
-    
-*   `[$dbx.or(...exps)](#js-database-dbx-or-exps)`  
-    Creates a new expression by concatenating the specified ones with `OR`.```javascript
-    // (status = 1 OR username like "%john%")
-    $dbx.or($dbx.exp("status = 1"), $dbx.like("username", "john"))
-    ```
-    
-*   `[$dbx.in(col, ...values)](#js-database-dbx-incol-values)`  
-    Generates an `IN` expression for the specified column and the list of allowed values.```javascript
-    // status IN ("public", "reviewed")
-    $dbx.in("status", "public", "reviewed")
-    ```
-    
-*   `[$dbx.notIn(col, ...values)](#js-database-dbx-notincol-values)`  
-    Generates an `NOT IN` expression for the specified column and the list of allowed values.```javascript
-    // status NOT IN ("public", "reviewed")
-    $dbx.notIn("status", "public", "reviewed")
-    ```
-    
-*   `[$dbx.like(col, ...values)](#js-database-dbx-likecol-values)`  
-    Generates a `LIKE` expression for the specified column and the possible strings that the column should be like. If multiple values are present, the column should be like **all** of them.  
-    By default, each value will be surrounded by _"%"_ to enable partial matching. Special characters like _"%"_, _"\\"_, _"\_"_ will also be properly escaped. You may call `escape(...pairs)` and/or `match(left, right)` to change the default behavior.```javascript
-    // name LIKE "%test1%" AND name LIKE "%test2%"
-    $dbx.like("name", "test1", "test2")
-    
-    // name LIKE "test1%"
-    $dbx.like("name", "test1").match(false, true)
-    ```
-    
-*   `[$dbx.notLike(col, ...values)](#js-database-dbx-notlikecol-values)`  
-    Generates a `NOT LIKE` expression in similar manner as `like()`.```javascript
-    // name NOT LIKE "%test1%" AND name NOT LIKE "%test2%"
-    $dbx.notLike("name", "test1", "test2")
-    
-    // name NOT LIKE "test1%"
-    $dbx.notLike("name", "test1").match(false, true)
-    ```
-    
-*   `[$dbx.orLike(col, ...values)](#js-database-dbx-orlikecol-values)`  
-    This is similar to `like()` except that the column must be one of the provided values, aka. multiple values are concatenated with `OR` instead of `AND`.```javascript
-    // name LIKE "%test1%" OR name LIKE "%test2%"
-    $dbx.orLike("name", "test1", "test2")
-    
-    // name LIKE "test1%" OR name LIKE "test2%"
-    $dbx.orLike("name", "test1", "test2").match(false, true)
-    ```
-    
-*   `[$dbx.orNotLike(col, ...values)](#js-database-dbx-ornotlikecol-values)`  
-    This is similar to `notLike()` except that the column must not be one of the provided values, aka. multiple values are concatenated with `OR` instead of `AND`.```javascript
-    // name NOT LIKE "%test1%" OR name NOT LIKE "%test2%"
-    $dbx.orNotLike("name", "test1", "test2")
-    
-    // name NOT LIKE "test1%" OR name NOT LIKE "test2%"
-    $dbx.orNotLike("name", "test1", "test2").match(false, true)
-    ```
-    
-*   `[$dbx.exists(exp)](#js-database-dbx-existsexp)`  
-    Prefix with `EXISTS` the specified expression (usually a subquery).```javascript
-    // EXISTS (SELECT 1 FROM users WHERE status = 'active')
-    $dbx.exists(dbx.exp("SELECT 1 FROM users WHERE status = 'active'"))
-    ```
-    
-*   `[$dbx.notExists(exp)](#js-database-dbx-notexistsexp)`  
-    Prefix with `NOT EXISTS` the specified expression (usually a subquery).```javascript
-    // NOT EXISTS (SELECT 1 FROM users WHERE status = 'active')
-    $dbx.notExists(dbx.exp("SELECT 1 FROM users WHERE status = 'active'"))
-    ```
-    
-*   `[$dbx.between(col, from, to)](#js-database-dbx-betweencol-from-to)`  
-    Generates a `BETWEEN` expression with the specified range.```javascript
-    // age BETWEEN 3 and 99
-    $dbx.between("age", 3, 99)
-    ```
-    
-*   `[$dbx.notBetween(col, from, to)](#js-database-dbx-notbetweencol-from-to)`  
-    Generates a `NOT BETWEEN` expression with the specified range.```javascript
-    // age NOT BETWEEN 3 and 99
-    $dbx.notBetween("age", 3, 99)
-    ```
-    
+- `[$dbx.exp(raw, optParams)](#js-database-dbx-expraw-optparams)`  
+  Generates an expression with the specified raw query fragment. Use the `optParams` to bind parameters to the expression.```javascript
+  $dbx.exp("status = 'public'")
+  $dbx.exp("total > {:min} AND total < {:max}", { min: 10, max: 30 })
+
+  ```
+
+  ```
+
+- `[$dbx.hashExp(pairs)](#js-database-dbx-hashexppairs)`  
+  Generates a hash expression from a map whose keys are DB column names which need to be filtered according to the corresponding values.```javascript
+  // slug = "example" AND active IS TRUE AND tags in ("tag1", "tag2", "tag3") AND parent IS NULL
+  $dbx.hashExp({
+  slug: "example",
+  active: true,
+  tags: ["tag1", "tag2", "tag3"],
+  parent: null,
+  })
+
+  ```
+
+  ```
+
+- `[$dbx.not(exp)](#js-database-dbx-notexp)`  
+  Negates a single expression by wrapping it with `NOT()`.```javascript
+  // NOT(status = 1)
+  $dbx.not($dbx.exp("status = 1"))
+
+  ```
+
+  ```
+
+- `[$dbx.and(...exps)](#js-database-dbx-and-exps)`  
+  Creates a new expression by concatenating the specified ones with `AND`.```javascript
+  // (status = 1 AND username like "%john%")
+  $dbx.and($dbx.exp("status = 1"), $dbx.like("username", "john"))
+
+  ```
+
+  ```
+
+- `[$dbx.or(...exps)](#js-database-dbx-or-exps)`  
+  Creates a new expression by concatenating the specified ones with `OR`.```javascript
+  // (status = 1 OR username like "%john%")
+  $dbx.or($dbx.exp("status = 1"), $dbx.like("username", "john"))
+
+  ```
+
+  ```
+
+- `[$dbx.in(col, ...values)](#js-database-dbx-incol-values)`  
+  Generates an `IN` expression for the specified column and the list of allowed values.```javascript
+  // status IN ("public", "reviewed")
+  $dbx.in("status", "public", "reviewed")
+
+  ```
+
+  ```
+
+- `[$dbx.notIn(col, ...values)](#js-database-dbx-notincol-values)`  
+  Generates an `NOT IN` expression for the specified column and the list of allowed values.```javascript
+  // status NOT IN ("public", "reviewed")
+  $dbx.notIn("status", "public", "reviewed")
+
+  ```
+
+  ```
+
+- `[$dbx.like(col, ...values)](#js-database-dbx-likecol-values)`  
+  Generates a `LIKE` expression for the specified column and the possible strings that the column should be like. If multiple values are present, the column should be like **all** of them.  
+  By default, each value will be surrounded by _"%"_ to enable partial matching. Special characters like _"%"_, _"\\"_, _"\_"_ will also be properly escaped. You may call `escape(...pairs)` and/or `match(left, right)` to change the default behavior.```javascript
+  // name LIKE "%test1%" AND name LIKE "%test2%"
+  $dbx.like("name", "test1", "test2")
+
+  // name LIKE "test1%"
+  $dbx.like("name", "test1").match(false, true)
+
+  ```
+
+  ```
+
+- `[$dbx.notLike(col, ...values)](#js-database-dbx-notlikecol-values)`  
+  Generates a `NOT LIKE` expression in similar manner as `like()`.```javascript
+  // name NOT LIKE "%test1%" AND name NOT LIKE "%test2%"
+  $dbx.notLike("name", "test1", "test2")
+
+  // name NOT LIKE "test1%"
+  $dbx.notLike("name", "test1").match(false, true)
+
+  ```
+
+  ```
+
+- `[$dbx.orLike(col, ...values)](#js-database-dbx-orlikecol-values)`  
+  This is similar to `like()` except that the column must be one of the provided values, aka. multiple values are concatenated with `OR` instead of `AND`.```javascript
+  // name LIKE "%test1%" OR name LIKE "%test2%"
+  $dbx.orLike("name", "test1", "test2")
+
+  // name LIKE "test1%" OR name LIKE "test2%"
+  $dbx.orLike("name", "test1", "test2").match(false, true)
+
+  ```
+
+  ```
+
+- `[$dbx.orNotLike(col, ...values)](#js-database-dbx-ornotlikecol-values)`  
+  This is similar to `notLike()` except that the column must not be one of the provided values, aka. multiple values are concatenated with `OR` instead of `AND`.```javascript
+  // name NOT LIKE "%test1%" OR name NOT LIKE "%test2%"
+  $dbx.orNotLike("name", "test1", "test2")
+
+  // name NOT LIKE "test1%" OR name NOT LIKE "test2%"
+  $dbx.orNotLike("name", "test1", "test2").match(false, true)
+
+  ```
+
+  ```
+
+- `[$dbx.exists(exp)](#js-database-dbx-existsexp)`  
+  Prefix with `EXISTS` the specified expression (usually a subquery).```javascript
+  // EXISTS (SELECT 1 FROM users WHERE status = 'active')
+  $dbx.exists(dbx.exp("SELECT 1 FROM users WHERE status = 'active'"))
+
+  ```
+
+  ```
+
+- `[$dbx.notExists(exp)](#js-database-dbx-notexistsexp)`  
+  Prefix with `NOT EXISTS` the specified expression (usually a subquery).```javascript
+  // NOT EXISTS (SELECT 1 FROM users WHERE status = 'active')
+  $dbx.notExists(dbx.exp("SELECT 1 FROM users WHERE status = 'active'"))
+
+  ```
+
+  ```
+
+- `[$dbx.between(col, from, to)](#js-database-dbx-betweencol-from-to)`  
+  Generates a `BETWEEN` expression with the specified range.```javascript
+  // age BETWEEN 3 and 99
+  $dbx.between("age", 3, 99)
+
+  ```
+
+  ```
+
+- `[$dbx.notBetween(col, from, to)](#js-database-dbx-notbetweencol-from-to)`  
+  Generates a `NOT BETWEEN` expression with the specified range.```javascript
+  // age NOT BETWEEN 3 and 99
+  $dbx.notBetween("age", 3, 99)
+
+  ```
+
+  ```
 
 ##### [orderBy(), andOrderBy()](#js-database-orderby-andorderby)
 
@@ -3191,18 +3492,18 @@ Inside the transaction function always use its `txApp` argument and not the orig
 To avoid performance issues, try to minimize slow/long running tasks such as sending emails, connecting to external services, etc. as part of the transaction.
 
 ```javascript
-$app.runInTransaction((txApp) => {
-    // update a record
-    const record = txApp.findRecordById("articles", "RECORD_ID")
-    record.set("status", "active")
-    txApp.save(record)
+$app.runInTransaction(txApp => {
+  // update a record
+  const record = txApp.findRecordById('articles', 'RECORD_ID')
+  record.set('status', 'active')
+  txApp.save(record)
 
-    // run a custom raw query (doesn't fire event hooks)
-    txApp.db().newQuery("DELETE FROM articles WHERE status = 'pending'").execute()
+  // run a custom raw query (doesn't fire event hooks)
+  txApp.db().newQuery("DELETE FROM articles WHERE status = 'pending'").execute()
 })
 ```
 
-* * *
+---
 
 [Prev: Routing](#js-routing) [Next: Record operations](#js-records)
 
@@ -3220,35 +3521,35 @@ The most common task when extending PocketBase probably would be querying and wo
 
 You could find detailed documentation about all the supported Record model methods in [`core.Record`](/jsvm/interfaces/core.Record.html) type interface but below are some examples with the most common ones.
 
-*   [Set field value](#js-records-set-field-value)
-*   [Get field value](#js-records-get-field-value)
-*   [Auth accessors](#js-records-auth-accessors)
-*   [Copies](#js-records-copies)
-*   [Hide/Unhide fields](#js-records-hideunhide-fields)
-*   [Fetch records](#js-records-fetch-records)
-    *   [Fetch single record](#js-records-fetch-single-record)
-    *   [Fetch multiple records](#js-records-fetch-multiple-records)
-    *   [Fetch auth records](#js-records-fetch-auth-records)
-    *   [Custom record query](#js-records-custom-record-query)
-*   [Create new record](#js-records-create-new-record)
-    *   [Create new record programmatically](#js-records-create-new-record-programmatically)
-    *   [Intercept create request](#js-records-intercept-create-request)
-*   [Update existing record](#js-records-update-existing-record)
-    *   [Update existing record programmatically](#js-records-update-existing-record-programmatically)
-    *   [Intercept update request](#js-records-intercept-update-request)
-*   [Delete record](#js-records-delete-record)
-*   [Transaction](#js-records-transaction)
-*   [Programmatically expanding relations](#js-records-programmatically-expanding-relations)
-*   [Check if record can be accessed](#js-records-check-if-record-can-be-accessed)
-*   [Generating and validating tokens](#js-records-generating-and-validating-tokens)
+- [Set field value](#js-records-set-field-value)
+- [Get field value](#js-records-get-field-value)
+- [Auth accessors](#js-records-auth-accessors)
+- [Copies](#js-records-copies)
+- [Hide/Unhide fields](#js-records-hideunhide-fields)
+- [Fetch records](#js-records-fetch-records)
+  - [Fetch single record](#js-records-fetch-single-record)
+  - [Fetch multiple records](#js-records-fetch-multiple-records)
+  - [Fetch auth records](#js-records-fetch-auth-records)
+  - [Custom record query](#js-records-custom-record-query)
+- [Create new record](#js-records-create-new-record)
+  - [Create new record programmatically](#js-records-create-new-record-programmatically)
+  - [Intercept create request](#js-records-intercept-create-request)
+- [Update existing record](#js-records-update-existing-record)
+  - [Update existing record programmatically](#js-records-update-existing-record-programmatically)
+  - [Intercept update request](#js-records-intercept-update-request)
+- [Delete record](#js-records-delete-record)
+- [Transaction](#js-records-transaction)
+- [Programmatically expanding relations](#js-records-programmatically-expanding-relations)
+- [Check if record can be accessed](#js-records-check-if-record-can-be-accessed)
+- [Generating and validating tokens](#js-records-generating-and-validating-tokens)
 
 ### [Set field value](#js-records-set-field-value)
 
 ```javascript
 // sets the value of a single record field
 // (field type specific modifiers are also supported)
-record.set("title", "example")
-record.set("users+", "6jyr1y02438et52") // append to existing value
+record.set('title', 'example')
+record.set('users+', '6jyr1y02438et52') // append to existing value
 
 // populates a record from a data map
 // (calls set() for each entry of the map)
@@ -3290,18 +3591,18 @@ record.publicExport()
 ```javascript
 record.isSuperuser() // alias for record.collection().name == "_superusers"
 
-record.email()         // alias for record.get("email")
+record.email() // alias for record.get("email")
 record.setEmail(email) // alias for record.set("email", email)
 
-record.verified()         // alias for record.get("verified")
+record.verified() // alias for record.get("verified")
 record.setVerified(false) // alias for record.set("verified", false)
 
-record.tokenKey()        // alias for record.get("tokenKey")
-record.setTokenKey(key)  // alias for record.set("tokenKey", key)
+record.tokenKey() // alias for record.get("tokenKey")
+record.setTokenKey(key) // alias for record.set("tokenKey", key)
 record.refreshTokenKey() // alias for record.set("tokenKey:autogenerate", "")
 
 record.validatePassword(pass)
-record.setPassword(pass)   // alias for record.set("password", pass)
+record.setPassword(pass) // alias for record.set("password", pass)
 record.setRandomPassword() // sets cryptographically random 30 characters string as password
 ```
 
@@ -3332,18 +3633,19 @@ Record models provide an option to further control the fields serialization visi
 Often the `hide/unhide` methods are used in combination with the `onRecordEnrich` hook invoked on every record enriching (list, view, create, update, realtime change, etc.). For example:
 
 ```javascript
-onRecordEnrich((e) => {
-    // dynamically show/hide a record field depending on whether the current
-    // authenticated user has a certain "role" (or any other field constraint)
-    if (
-        !e.requestInfo.auth ||
-        (!e.requestInfo.auth.isSuperuser() && e.requestInfo.auth.get("role") != "staff")
-    ) {
-        e.record.hide("someStaffOnlyField")
-    }
+onRecordEnrich(e => {
+  // dynamically show/hide a record field depending on whether the current
+  // authenticated user has a certain "role" (or any other field constraint)
+  if (
+    !e.requestInfo.auth ||
+    (!e.requestInfo.auth.isSuperuser() &&
+      e.requestInfo.auth.get('role') != 'staff')
+  ) {
+    e.record.hide('someStaffOnlyField')
+  }
 
-    e.next()
-}, "articles")
+  e.next()
+}, 'articles')
 ```
 
 For custom fields, not part of the record collection schema, it is required to call explicitly `record.withCustomData(true)` to allow them in the public serialization.
@@ -3356,17 +3658,17 @@ All single record retrieval methods throw an error if no record is found.
 
 ```javascript
 // retrieve a single "articles" record by its id
-let record = $app.findRecordById("articles", "RECORD_ID")
+let record = $app.findRecordById('articles', 'RECORD_ID')
 
 // retrieve a single "articles" record by a single key-value pair
-let record = $app.findFirstRecordByData("articles", "slug", "test")
+let record = $app.findFirstRecordByData('articles', 'slug', 'test')
 
 // retrieve a single "articles" record by a string filter expression
 // (NB! use "{:placeholder}" to safely bind untrusted user input parameters)
 let record = $app.findFirstRecordByFilter(
-    "articles",
-    "status = 'public' && category = {:category}",
-    { "category": "news" },
+  'articles',
+  "status = 'public' && category = {:category}",
+  { category: 'news' }
 )
 ```
 
@@ -3376,26 +3678,30 @@ All multiple records retrieval methods return an empty array if no records are f
 
 ```javascript
 // retrieve multiple "articles" records by their ids
-let records = $app.findRecordsByIds("articles", ["RECORD_ID1", "RECORD_ID2"])
+let records = $app.findRecordsByIds('articles', ['RECORD_ID1', 'RECORD_ID2'])
 
 // retrieve the total number of "articles" records in a collection with optional dbx expressions
-let totalPending = $app.countRecords("articles", $dbx.hashExp({"status": "pending"}))
+let totalPending = $app.countRecords(
+  'articles',
+  $dbx.hashExp({ status: 'pending' })
+)
 
 // retrieve multiple "articles" records with optional dbx expressions
-let records = $app.findAllRecords("articles",
-    $dbx.exp("LOWER(username) = {:username}", {"username": "John.Doe"}),
-    $dbx.hashExp({"status": "pending"}),
+let records = $app.findAllRecords(
+  'articles',
+  $dbx.exp('LOWER(username) = {:username}', { username: 'John.Doe' }),
+  $dbx.hashExp({ status: 'pending' })
 )
 
 // retrieve multiple paginated "articles" records by a string filter expression
 // (NB! use "{:placeholder}" to safely bind untrusted user input parameters)
 let records = $app.findRecordsByFilter(
-    "articles",                                    // collection
-    "status = 'public' && category = {:category}", // filter
-    "-published",                                   // sort
-    10,                                            // limit
-    0,                                             // offset
-    { "category": "news" },                        // optional filter params
+  'articles', // collection
+  "status = 'public' && category = {:category}", // filter
+  '-published', // sort
+  10, // limit
+  0, // offset
+  { category: 'news' } // optional filter params
 )
 ```
 
@@ -3403,11 +3709,11 @@ let records = $app.findRecordsByFilter(
 
 ```javascript
 // retrieve a single auth record by its email
-let user = $app.findAuthRecordByEmail("users", "test@example.com")
+let user = $app.findAuthRecordByEmail('users', 'test@example.com')
 
 // retrieve a single auth record by JWT
 // (you could also specify an optional list of accepted token types)
-let user = $app.findAuthRecordByToken("YOUR_TOKEN", "auth")
+let user = $app.findAuthRecordByToken('YOUR_TOKEN', 'auth')
 ```
 
 ##### [Custom record query](#js-records-custom-record-query)
@@ -3416,15 +3722,16 @@ In addition to the above query helpers, you can also create custom Record querie
 
 ```javascript
 function findTopArticle() {
-    let record = new Record();
+  let record = new Record()
 
-    $app.recordQuery("articles")
-        .andWhere($dbx.hashExp({ "status": "active" }))
-        .orderBy("rank ASC")
-        .limit(1)
-        .one(record)
+  $app
+    .recordQuery('articles')
+    .andWhere($dbx.hashExp({ status: 'active' }))
+    .orderBy('rank ASC')
+    .limit(1)
+    .one(record)
 
-    return record
+  return record
 }
 
 let article = findTopArticle()
@@ -3437,15 +3744,16 @@ For retrieving **multiple** Record models with the `all()` executor, you can use
 // $app.findRecordsByFilter("articles", "status = 'active'", '-published', 10)
 // but allows more advanced use cases and filtering (aggregations, subqueries, etc.)
 function findLatestArticles() {
-    let records = arrayOf(new Record);
+  let records = arrayOf(new Record())
 
-    $app.recordQuery("articles")
-        .andWhere($dbx.hashExp({ "status": "active" }))
-        .orderBy("published DESC")
-        .limit(10)
-        .all(records)
+  $app
+    .recordQuery('articles')
+    .andWhere($dbx.hashExp({ status: 'active' }))
+    .orderBy('published DESC')
+    .limit(10)
+    .all(records)
 
-    return records
+  return records
 }
 
 let articles = findLatestArticles()
@@ -3456,54 +3764,56 @@ let articles = findLatestArticles()
 ##### [Create new record programmatically](#js-records-create-new-record-programmatically)
 
 ```javascript
-let collection = $app.findCollectionByNameOrId("articles")
+let collection = $app.findCollectionByNameOrId('articles')
 
 let record = new Record(collection)
 
-record.set("title", "Lorem ipsum")
-record.set("active", true)
+record.set('title', 'Lorem ipsum')
+record.set('active', true)
 
 // field type specific modifiers can also be used
-record.set("slug:autogenerate", "post-")
+record.set('slug:autogenerate', 'post-')
 
 // new files must be one or a slice of filesystem.File values
 //
 // note1: see all factories in /jsvm/modules/_filesystem.html
 // note2: for reading files from a request event you can also use e.findUploadedFiles("fileKey")
-let f1 = $filesystem.fileFromPath("/local/path/to/file1.txt")
-let f2 = $filesystem.fileFromBytes("test content", "file2.txt")
-let f3 = $filesystem.fileFromURL("https://example.com/file3.pdf")
-record.set("documents", [f1, f2, f3])
+let f1 = $filesystem.fileFromPath('/local/path/to/file1.txt')
+let f2 = $filesystem.fileFromBytes('test content', 'file2.txt')
+let f3 = $filesystem.fileFromURL('https://example.com/file3.pdf')
+record.set('documents', [f1, f2, f3])
 
 // validate and persist
 // (use saveNoValidate to skip fields validation)
-$app.save(record);
+$app.save(record)
 ```
 
 ##### [Intercept create request](#js-records-intercept-create-request)
 
 ```javascript
-onRecordCreateRequest((e) => {
-    // ignore for superusers
-    if (e.hasSuperuserAuth()) {
-        return e.next()
-    }
+onRecordCreateRequest(e => {
+  // ignore for superusers
+  if (e.hasSuperuserAuth()) {
+    return e.next()
+  }
 
-    // overwrite the submitted "status" field value
-    e.record.set("status", "pending")
+  // overwrite the submitted "status" field value
+  e.record.set('status', 'pending')
 
-    // or you can also prevent the create event by returning an error
-    let status = e.record.get("status")
-    if (
-        status != "pending" &&
-        // guest or not an editor
-        (!e.auth || e.auth.get("role") != "editor")
-    ) {
-        throw new BadRequestError("Only editors can set a status different from pending")
-    }
+  // or you can also prevent the create event by returning an error
+  let status = e.record.get('status')
+  if (
+    status != 'pending' &&
+    // guest or not an editor
+    (!e.auth || e.auth.get('role') != 'editor')
+  ) {
+    throw new BadRequestError(
+      'Only editors can set a status different from pending'
+    )
+  }
 
-    e.next()
-}, "articles")
+  e.next()
+}, 'articles')
 ```
 
 ### [Update existing record](#js-records-update-existing-record)
@@ -3511,57 +3821,59 @@ onRecordCreateRequest((e) => {
 ##### [Update existing record programmatically](#js-records-update-existing-record-programmatically)
 
 ```javascript
-let record = $app.findRecordById("articles", "RECORD_ID")
+let record = $app.findRecordById('articles', 'RECORD_ID')
 
-record.set("title", "Lorem ipsum")
+record.set('title', 'Lorem ipsum')
 
 // delete existing record files by specifying their file names
-record.set("documents-", ["file1_abc123.txt", "file3_abc123.txt"])
+record.set('documents-', ['file1_abc123.txt', 'file3_abc123.txt'])
 
 // append one or more new files to the already uploaded list
 //
 // note1: see all factories in /jsvm/modules/_filesystem.html
 // note2: for reading files from a request event you can also use e.findUploadedFiles("fileKey")
-let f1 = $filesystem.fileFromPath("/local/path/to/file1.txt")
-let f2 = $filesystem.fileFromBytes("test content", "file2.txt")
-let f3 = $filesystem.fileFromURL("https://example.com/file3.pdf")
-record.set("documents+", [f1, f2, f3])
+let f1 = $filesystem.fileFromPath('/local/path/to/file1.txt')
+let f2 = $filesystem.fileFromBytes('test content', 'file2.txt')
+let f3 = $filesystem.fileFromURL('https://example.com/file3.pdf')
+record.set('documents+', [f1, f2, f3])
 
 // validate and persist
 // (use saveNoValidate to skip fields validation)
-$app.save(record);
+$app.save(record)
 ```
 
 ##### [Intercept update request](#js-records-intercept-update-request)
 
 ```javascript
-onRecordUpdateRequest((e) => {
-    // ignore for superusers
-    if (e.hasSuperuserAuth()) {
-        return e.next()
-    }
+onRecordUpdateRequest(e => {
+  // ignore for superusers
+  if (e.hasSuperuserAuth()) {
+    return e.next()
+  }
 
-    // overwrite the submitted "status" field value
-    e.record.set("status", "pending")
+  // overwrite the submitted "status" field value
+  e.record.set('status', 'pending')
 
-    // or you can also prevent the create event by returning an error
-    let status = e.record.get("status")
-    if (
-        status != "pending" &&
-        // guest or not an editor
-        (!e.auth || e.auth.get("role") != "editor")
-    ) {
-        throw new BadRequestError("Only editors can set a status different from pending")
-    }
+  // or you can also prevent the create event by returning an error
+  let status = e.record.get('status')
+  if (
+    status != 'pending' &&
+    // guest or not an editor
+    (!e.auth || e.auth.get('role') != 'editor')
+  ) {
+    throw new BadRequestError(
+      'Only editors can set a status different from pending'
+    )
+  }
 
-    e.next()
-}, "articles")
+  e.next()
+}, 'articles')
 ```
 
 ### [Delete record](#js-records-delete-record)
 
 ```javascript
-let record = $app.findRecordById("articles", "RECORD_ID")
+let record = $app.findRecordById('articles', 'RECORD_ID')
 
 $app.delete(record)
 ```
@@ -3579,19 +3891,19 @@ Inside the transaction function always use its `txApp` argument and not the orig
 To avoid performance issues, try to minimize slow/long running tasks such as sending emails, connecting to external services, etc. as part of the transaction.
 
 ```javascript
-let titles = ["title1", "title2", "title3"]
+let titles = ['title1', 'title2', 'title3']
 
-let collection = $app.findCollectionByNameOrId("articles")
+let collection = $app.findCollectionByNameOrId('articles')
 
-$app.runInTransaction((txApp) => {
-    // create new record for each title
-    for (let title of titles) {
-        let record = new Record(collection)
+$app.runInTransaction(txApp => {
+  // create new record for each title
+  for (let title of titles) {
+    let record = new Record(collection)
 
-        record.set("title", title)
+    record.set('title', title)
 
-        txApp.save(record)
-    }
+    txApp.save(record)
+  }
 })
 ```
 
@@ -3604,14 +3916,14 @@ Once loaded, you can access the expanded relations via [`record.expandedOne(relN
 For example:
 
 ```javascript
-let record = $app.findFirstRecordByData("articles", "slug", "lorem-ipsum")
+let record = $app.findFirstRecordByData('articles', 'slug', 'lorem-ipsum')
 
 // expand the "author" and "categories" relations
-$app.expandRecord(record, ["author", "categories"], null)
+$app.expandRecord(record, ['author', 'categories'], null)
 
 // print the expanded records
-console.log(record.expandedOne("author"))
-console.log(record.expandedAll("categories"))
+console.log(record.expandedOne('author'))
+console.log(record.expandedAll('categories'))
 ```
 
 ### [Check if record can be accessed](#js-records-check-if-record-can-be-accessed)
@@ -3621,17 +3933,21 @@ To check whether a custom client request or user can access a single record, you
 Below is an example of creating a custom route to retrieve a single article and checking the request satisfy the View API rule of the record collection:
 
 ```javascript
-routerAdd("GET", "/articles/{slug}", (e) => {
-    let slug = e.request.pathValue("slug")
+routerAdd('GET', '/articles/{slug}', e => {
+  let slug = e.request.pathValue('slug')
 
-    let record = e.app.findFirstRecordByData("articles", "slug", slug)
+  let record = e.app.findFirstRecordByData('articles', 'slug', slug)
 
-    let canAccess = e.app.canAccessRecord(record, e.requestInfo(), record.collection().viewRule)
-    if (!canAccess) {
-        throw new ForbiddenError()
-    }
+  let canAccess = e.app.canAccessRecord(
+    record,
+    e.requestInfo(),
+    record.collection().viewRule
+  )
+  if (!canAccess) {
+    throw new ForbiddenError()
+  }
 
-    return e.json(200, record)
+  return e.json(200, record)
 })
 ```
 
@@ -3662,10 +3978,10 @@ To validate a record token you can use the [`$app.findAuthRecordByToken`](/jsvm/
 Here is an example how to validate an auth token:
 
 ```javascript
-let record = $app.findAuthRecordByToken("YOUR_TOKEN", "auth")
+let record = $app.findAuthRecordByToken('YOUR_TOKEN', 'auth')
 ```
 
-* * *
+---
 
 [Prev: Database](#js-database) [Next: Collection operations](#js-collections)
 
@@ -3681,14 +3997,14 @@ Collection operations
 
 Collections are usually managed via the Dashboard interface, but there are some situations where you may want to create or edit a collection programmatically (usually as part of a [DB migration](#js-migrations)). You can find all available Collection related operations and methods in [`$app`](/jsvm/modules/_app.html) and [`Collection`](/jsvm/classes/Collection.html) , but below are listed some of the most common ones:
 
-*   [Fetch collections](#js-collections-fetch-collections)
-    *   [Fetch single collection](#js-collections-fetch-single-collection)
-    *   [Fetch multiple collections](#js-collections-fetch-multiple-collections)
-    *   [Custom collection query](#js-collections-custom-collection-query)
-*   [Field definitions](#js-collections-field-definitions)
-*   [Create new collection](#js-collections-create-new-collection)
-*   [Update existing collection](#js-collections-update-existing-collection)
-*   [Delete collection](#js-collections-delete-collection)
+- [Fetch collections](#js-collections-fetch-collections)
+  - [Fetch single collection](#js-collections-fetch-single-collection)
+  - [Fetch multiple collections](#js-collections-fetch-multiple-collections)
+  - [Custom collection query](#js-collections-custom-collection-query)
+- [Field definitions](#js-collections-field-definitions)
+- [Create new collection](#js-collections-create-new-collection)
+- [Update existing collection](#js-collections-update-existing-collection)
+- [Delete collection](#js-collections-delete-collection)
 
 ### [Fetch collections](#js-collections-fetch-collections)
 
@@ -3697,7 +4013,7 @@ Collections are usually managed via the Dashboard interface, but there are some 
 All single collection retrieval methods throw an error if no collection is found.
 
 ```javascript
-let collection = $app.findCollectionByNameOrId("example")
+let collection = $app.findCollectionByNameOrId('example')
 ```
 
 ##### [Fetch multiple collections](#js-collections-fetch-multiple-collections)
@@ -3716,31 +4032,32 @@ let authAndViewCollections := $app.findAllCollections("auth", "view")
 In addition to the above query helpers, you can also create custom Collection queries using [`$app.collectionQuery()`](/jsvm/functions/_app.collectionQuery.html) method. It returns a SELECT DB builder that can be used with the same methods described in the [Database guide](#js-database).
 
 ```javascript
-let collections = arrayOf(new Collection)
+let collections = arrayOf(new Collection())
 
-$app.collectionQuery().
-    andWhere($dbx.hashExp({"viewRule": null})).
-    orderBy("created DESC").
-    all(collections)
+$app
+  .collectionQuery()
+  .andWhere($dbx.hashExp({ viewRule: null }))
+  .orderBy('created DESC')
+  .all(collections)
 ```
 
 ### [Field definitions](#js-collections-field-definitions)
 
 All collection fields _(with exception of the `JSONField`)_ are non-nullable and uses a zero-default for their respective type as fallback value when missing.
 
-*   [`new BoolField({ ... })`](/jsvm/classes/BoolField.html)
-*   [`new NumberField({ ... })`](/jsvm/classes/NumberField.html)
-*   [`new TextField({ ... })`](/jsvm/classes/TextField.html)
-*   [`new EmailField({ ... })`](/jsvm/classes/EmailField.html)
-*   [`new URLField({ ... })`](/jsvm/classes/URLField.html)
-*   [`new EditorField({ ... })`](/jsvm/classes/EditorField.html)
-*   [`new DateField({ ... })`](/jsvm/classes/DateField.html)
-*   [`new AutodateField({ ... })`](/jsvm/classes/AutodateField.html)
-*   [`new SelectField({ ... })`](/jsvm/classes/SelectField.html)
-*   [`new FileField({ ... })`](/jsvm/classes/FileField.html)
-*   [`new RelationField({ ... })`](/jsvm/classes/RelationField.html)
-*   [`new JSONField({ ... })`](/jsvm/classes/JSONField.html)
-*   [`new GeoPointField({ ... })`](/jsvm/classes/GeoPointField.html)
+- [`new BoolField({ ... })`](/jsvm/classes/BoolField.html)
+- [`new NumberField({ ... })`](/jsvm/classes/NumberField.html)
+- [`new TextField({ ... })`](/jsvm/classes/TextField.html)
+- [`new EmailField({ ... })`](/jsvm/classes/EmailField.html)
+- [`new URLField({ ... })`](/jsvm/classes/URLField.html)
+- [`new EditorField({ ... })`](/jsvm/classes/EditorField.html)
+- [`new DateField({ ... })`](/jsvm/classes/DateField.html)
+- [`new AutodateField({ ... })`](/jsvm/classes/AutodateField.html)
+- [`new SelectField({ ... })`](/jsvm/classes/SelectField.html)
+- [`new FileField({ ... })`](/jsvm/classes/FileField.html)
+- [`new RelationField({ ... })`](/jsvm/classes/RelationField.html)
+- [`new JSONField({ ... })`](/jsvm/classes/JSONField.html)
+- [`new GeoPointField({ ... })`](/jsvm/classes/GeoPointField.html)
 
 ### [Create new collection](#js-collections-create-new-collection)
 
@@ -3748,32 +4065,30 @@ All collection fields _(with exception of the `JSONField`)_ are non-nullable and
 // missing default options, system fields like id, email, etc. are initialized automatically
 // and will be merged with the provided configuration
 let collection = new Collection({
-    type:       "base", // base | auth | view
-    name:       "example",
-    listRule:   null,
-    viewRule:   "@request.auth.id != ''",
-    createRule: "",
-    updateRule: "@request.auth.id != ''",
-    deleteRule: null,
-    fields: [
-        {
-            name:     "title",
-            type:     "text",
-            required: true,
-            max: 10,
-        },
-        {
-            name:          "user",
-            type:          "relation",
-            required:      true,
-            maxSelect:     1,
-            collectionId:  "ae40239d2bc4477",
-            cascadeDelete: true,
-        },
-    ],
-    indexes: [
-        "CREATE UNIQUE INDEX idx_user ON example (user)"
-    ],
+  type: 'base', // base | auth | view
+  name: 'example',
+  listRule: null,
+  viewRule: "@request.auth.id != ''",
+  createRule: '',
+  updateRule: "@request.auth.id != ''",
+  deleteRule: null,
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      max: 10
+    },
+    {
+      name: 'user',
+      type: 'relation',
+      required: true,
+      maxSelect: 1,
+      collectionId: 'ae40239d2bc4477',
+      cascadeDelete: true
+    }
+  ],
+  indexes: ['CREATE UNIQUE INDEX idx_user ON example (user)']
 })
 
 // validate and persist
@@ -3784,24 +4099,26 @@ $app.save(collection)
 ### [Update existing collection](#js-collections-update-existing-collection)
 
 ```javascript
-let collection = $app.findCollectionByNameOrId("example")
+let collection = $app.findCollectionByNameOrId('example')
 
 // change the collection name
-collection.name = "example_update"
+collection.name = 'example_update'
 
 // add new editor field
-collection.fields.add(new EditorField({
-    name:     "description",
-    required: true,
-}))
+collection.fields.add(
+  new EditorField({
+    name: 'description',
+    required: true
+  })
+)
 
 // change existing field
 // (returns a pointer and direct modifications are allowed without the need of reinsert)
-let titleField = collection.fields.getByName("title")
+let titleField = collection.fields.getByName('title')
 titleField.min = 10
 
 // or: collection.indexes.push("CREATE INDEX idx_example_title ON example (title)")
-collection.addIndex("idx_example_title", false, "title", "")
+collection.addIndex('idx_example_title', false, 'title', '')
 
 // validate and persist
 // (use saveNoValidate to skip fields validation)
@@ -3811,12 +4128,12 @@ $app.save(collection)
 ### [Delete collection](#js-collections-delete-collection)
 
 ```javascript
-let collection = $app.findCollectionByNameOrId("example")
+let collection = $app.findCollectionByNameOrId('example')
 
 $app.delete(collection)
 ```
 
-* * *
+---
 
 [Prev: Record operations](#js-records) [Next: Migrations](#js-migrations)
 
@@ -3836,16 +4153,16 @@ The user defined migrations are located in `pb_migrations` directory (it can be 
 
 The generated migrations are safe to be committed to version control and can be shared with your other team members.
 
-*   [Automigrate](#js-migrations-automigrate)
-*   [Creating migrations](#js-migrations-creating-migrations)
-    *   [Migration file](#js-migrations-migration-file)
-*   [Collections snapshot](#js-migrations-collections-snapshot)
-*   [Migrations history](#js-migrations-migrations-history)
-*   [Examples](#js-migrations-examples)
-    *   [Executing raw SQL statements](#js-migrations-executing-raw-sql-statements)
-    *   [Initialize default application settings](#js-migrations-initialize-default-application-settings)
-    *   [Creating initial superuser](#js-migrations-creating-initial-superuser)
-    *   [Creating collection programmatically](#js-migrations-creating-collection-programmatically)
+- [Automigrate](#js-migrations-automigrate)
+- [Creating migrations](#js-migrations-creating-migrations)
+  - [Migration file](#js-migrations-migration-file)
+- [Collections snapshot](#js-migrations-collections-snapshot)
+- [Migrations history](#js-migrations-migrations-history)
+- [Examples](#js-migrations-examples)
+  - [Executing raw SQL statements](#js-migrations-executing-raw-sql-statements)
+  - [Initialize default application settings](#js-migrations-initialize-default-application-settings)
+  - [Creating initial superuser](#js-migrations-creating-initial-superuser)
+  - [Creating collection programmatically](#js-migrations-creating-collection-programmatically)
 
 ### [Automigrate](#js-migrations-automigrate)
 
@@ -3861,11 +4178,14 @@ To create a new blank migration you can run `migrate create`.
 
 ```javascript
 // pb_migrations/1687801097_your_new_migration.js
-migrate((app) => {
+migrate(
+  app => {
     // add up queries...
-}, (app) => {
+  },
+  app => {
     // add down queries...
-})
+  }
+)
 ```
 
 New migrations are applied automatically on `serve`.
@@ -3914,8 +4234,11 @@ The above command will remove any entry from the `_migrations` table that doesn'
 ```javascript
 // pb_migrations/1687801090_set_pending_status.js
 
-migrate((app) => {
-    app.db().newQuery("UPDATE articles SET status = 'pending' WHERE status = ''").execute()
+migrate(app => {
+  app
+    .db()
+    .newQuery("UPDATE articles SET status = 'pending' WHERE status = ''")
+    .execute()
 })
 ```
 
@@ -3924,18 +4247,18 @@ migrate((app) => {
 ```javascript
 // pb_migrations/1687801090_initial_settings.js
 
-migrate((app) => {
-    let settings = app.settings()
+migrate(app => {
+  let settings = app.settings()
 
-    // for all available settings fields you could check
-    // /jsvm/interfaces/core.Settings.html
-    settings.meta.appName = "test"
-    settings.meta.appURL = "https://example.com"
-    settings.logs.maxDays = 2
-    settings.logs.logAuthId = true
-    settings.logs.logIP = false
+  // for all available settings fields you could check
+  // /jsvm/interfaces/core.Settings.html
+  settings.meta.appName = 'test'
+  settings.meta.appURL = 'https://example.com'
+  settings.logs.maxDays = 2
+  settings.logs.logAuthId = true
+  settings.logs.logIP = false
 
-    app.save(settings)
+  app.save(settings)
 })
 ```
 
@@ -3946,25 +4269,29 @@ _For all supported record methods, you can refer to [Record operations](#js-reco
 ```javascript
 // pb_migrations/1687801090_initial_superuser.js
 
-migrate((app) => {
-    let superusers = app.findCollectionByNameOrId("_superusers")
+migrate(
+  app => {
+    let superusers = app.findCollectionByNameOrId('_superusers')
 
     let record = new Record(superusers)
 
     // note: the values can be eventually loaded via $os.getenv(key)
     // or from a special local config file
-    record.set("email", "test@example.com")
-    record.set("password", "1234567890")
+    record.set('email', 'test@example.com')
+    record.set('password', '1234567890')
 
     app.save(record)
-}, (app) => { // optional revert operation
+  },
+  app => {
+    // optional revert operation
     try {
-        let record = app.findAuthRecordByEmail("_superusers", "test@example.com")
-        app.delete(record)
+      let record = app.findAuthRecordByEmail('_superusers', 'test@example.com')
+      app.delete(record)
     } catch {
-        // silent errors (probably already deleted)
+      // silent errors (probably already deleted)
     }
-})
+  }
+)
 ```
 
 ##### [Creating collection programmatically](#js-migrations-creating-collection-programmatically)
@@ -3974,46 +4301,47 @@ _For all supported collection methods, you can refer to [Collection operations](
 ```javascript
 // migrations/1687801090_create_clients_collection.js
 
-migrate((app) => {
+migrate(
+  app => {
     // missing default options, system fields like id, email, etc. are initialized automatically
     // and will be merged with the provided configuration
     let collection = new Collection({
-        type:     "auth",
-        name:     "clients",
-        listRule: "id = @request.auth.id",
-        viewRule: "id = @request.auth.id",
-        fields: [
-            {
-                type:     "text",
-                name:     "company",
-                required: true,
-                max:      100,
-            },
-            {
-                name:        "url",
-                type:        "url",
-                presentable: true,
-            },
-        ],
-        passwordAuth: {
-            enabled: false,
+      type: 'auth',
+      name: 'clients',
+      listRule: 'id = @request.auth.id',
+      viewRule: 'id = @request.auth.id',
+      fields: [
+        {
+          type: 'text',
+          name: 'company',
+          required: true,
+          max: 100
         },
-        otp: {
-            enabled: true,
-        },
-        indexes: [
-            "CREATE INDEX idx_clients_company ON clients (company)"
-        ],
+        {
+          name: 'url',
+          type: 'url',
+          presentable: true
+        }
+      ],
+      passwordAuth: {
+        enabled: false
+      },
+      otp: {
+        enabled: true
+      },
+      indexes: ['CREATE INDEX idx_clients_company ON clients (company)']
     })
 
     app.save(collection)
-}, (app) => {
-    let collection = app.findCollectionByNameOrId("clients")
+  },
+  app => {
+    let collection = app.findCollectionByNameOrId('clients')
     app.delete(collection)
-})
+  }
+)
 ```
 
-* * *
+---
 
 [Prev: Collection operations](#js-collections) [Next: Jobs scheduling](#js-jobs-scheduling)
 
@@ -4031,16 +4359,16 @@ If you have tasks that need to be performed periodically, you could setup cronta
 
 Each scheduled job runs in its own goroutine as part of the `serve` command process and must have:
 
-*   **id** - identifier for the scheduled job; could be used to replace or remove an existing job
-*   **cron expression** - e.g. `0 0 * * *` ( _supports numeric list, steps, ranges or macros_ )
-*   **handler** - the function that will be executed every time when the job runs
+- **id** - identifier for the scheduled job; could be used to replace or remove an existing job
+- **cron expression** - e.g. `0 0 * * *` ( _supports numeric list, steps, ranges or macros_ )
+- **handler** - the function that will be executed every time when the job runs
 
 Here is an example:
 
 ```javascript
 // prints "Hello!" every 2 minutes
-cronAdd("hello", "*/2 * * * *", () => {
-    console.log("Hello!")
+cronAdd('hello', '*/2 * * * *', () => {
+  console.log('Hello!')
 })
 ```
 
@@ -4048,7 +4376,7 @@ To remove a single registered cron job you can call `cronRemove(id)`.
 
 All registered app level cron jobs can be also previewed and triggered from the _Dashboard > Settings > Crons_ section.
 
-* * *
+---
 
 [Prev: Migrations](#js-migrations) [Next: Sending emails](#js-sending-emails)
 
@@ -4066,30 +4394,30 @@ PocketBase provides a simple abstraction for sending emails via the `$app.newMai
 
 Depending on your configured mail settings (_Dashboard > Settings > Mail settings_) it will use the `sendmail` command or a SMTP client.
 
-*   [Send custom email](#js-sending-emails-send-custom-email)
-*   [Overwrite system emails](#js-sending-emails-overwrite-system-emails)
+- [Send custom email](#js-sending-emails-send-custom-email)
+- [Overwrite system emails](#js-sending-emails-overwrite-system-emails)
 
 ### [Send custom email](#js-sending-emails-send-custom-email)
 
 You can send your own custom emails from everywhere within the app (hooks, middlewares, routes, etc.) by using `$app.newMailClient().send(message)`. Here is an example of sending a custom email after user registration:
 
 ```javascript
-onRecordCreateRequest((e) => {
-    e.next()
+onRecordCreateRequest(e => {
+  e.next()
 
-    const message = new MailerMessage({
-        from: {
-            address: e.app.settings().meta.senderAddress,
-            name:    e.app.settings().meta.senderName,
-        },
-        to:      [{address: e.record.email()}],
-        subject: "YOUR_SUBJECT...",
-        html:    "YOUR_HTML_BODY...",
-        // bcc, cc and custom headers are also supported...
-    })
+  const message = new MailerMessage({
+    from: {
+      address: e.app.settings().meta.senderAddress,
+      name: e.app.settings().meta.senderName
+    },
+    to: [{ address: e.record.email() }],
+    subject: 'YOUR_SUBJECT...',
+    html: 'YOUR_HTML_BODY...'
+    // bcc, cc and custom headers are also supported...
+  })
 
-    e.app.newMailClient().send(message)
-}, "users")
+  e.app.newMailClient().send(message)
+}, 'users')
 ```
 
 ### [Overwrite system emails](#js-sending-emails-overwrite-system-emails)
@@ -4099,15 +4427,15 @@ If you want to overwrite the default system emails for forgotten password, verif
 Alternatively, you can also apply individual changes by binding to one of the [mailer hooks](#js-event-hooks). Here is an example of appending a Record field value to the subject using the `onMailerRecordPasswordResetSend` hook:
 
 ```javascript
-onMailerRecordPasswordResetSend((e) => {
-    // modify the subject
-    e.message.subject += (" " + e.record.get("name"))
+onMailerRecordPasswordResetSend(e => {
+  // modify the subject
+  e.message.subject += ' ' + e.record.get('name')
 
-    e.next()
+  e.next()
 })
 ```
 
-* * *
+---
 
 [Prev: Jobs scheduling](#js-jobs-scheduling) [Next: Rendering templates](#js-rendering-templates)
 
@@ -4121,19 +4449,21 @@ Extend with JavaScript - Rendering templates
 
 Rendering templates
 
-*   [Overview](#js-rendering-templates-overview)
-*   [Example HTML page with layout](#js-rendering-templates-example-html-page-with-layout)
+- [Overview](#js-rendering-templates-overview)
+- [Example HTML page with layout](#js-rendering-templates-example-html-page-with-layout)
 
 ### [Overview](#js-rendering-templates-overview)
 
 A common task when creating custom routes or emails is the need of generating HTML output. To assist with this, PocketBase provides the global `$template` helper for parsing and rendering HTML templates.
 
 ```javascript
-const html = $template.loadFiles(
+const html = $template
+  .loadFiles(
     `${__hooks}/views/base.html`,
     `${__hooks}/views/partial1.html`,
-    `${__hooks}/views/partial2.html`,
-).render(data)
+    `${__hooks}/views/partial2.html`
+  )
+  .render(data)
 ```
 
 The general flow when working with composed and nested templates is that you create "base" template(s) that defines various placeholders using the `{{template "placeholderName" .}}` or `{{block "placeholderName" .}}default...{{end}}` actions.
@@ -4151,13 +4481,10 @@ For more information about the template syntax please refer to the [_html/templa
 Consider the following app directory structure:
 
 ```javascript
-myapp/
-    pb_hooks/
-        views/
-            layout.html
-            hello.html
-        main.pb.js
-    pocketbase
+myapp / pb_hooks / views / layout.html
+hello.html
+main.pb.js
+pocketbase
 ```
 
 We define the content for `layout.html` as:
@@ -4195,21 +4522,20 @@ We define the content for `hello.html` as:
 Then to output the final page, we'll register a custom `/hello/:name` route:
 
 ```javascript
-routerAdd("get", "/hello/{name}", (e) => {
-    const name = e.request.pathValue("name")
+routerAdd('get', '/hello/{name}', e => {
+  const name = e.request.pathValue('name')
 
-    const html = $template.loadFiles(
-        `${__hooks}/views/layout.html`,
-        `${__hooks}/views/hello.html`,
-    ).render({
-        "name": name,
+  const html = $template
+    .loadFiles(`${__hooks}/views/layout.html`, `${__hooks}/views/hello.html`)
+    .render({
+      name: name
     })
 
-    return e.html(200, html)
+  return e.html(200, html)
 })
 ```
 
-* * *
+---
 
 [Prev: Sending emails](#js-sending-emails) [Next: Console commands](#js-console-commands)
 
@@ -4228,12 +4554,14 @@ You can register custom console commands using `app.rootCmd.addCommand(cmd)`, wh
 Here is an example:
 
 ```javascript
-$app.rootCmd.addCommand(new Command({
-    use: "hello",
+$app.rootCmd.addCommand(
+  new Command({
+    use: 'hello',
     run: (cmd, args) => {
-        console.log("Hello world!")
-    },
-}))
+      console.log('Hello world!')
+    }
+  })
+)
 ```
 
 To run the command you can execute:
@@ -4244,7 +4572,7 @@ To run the command you can execute:
 
 Keep in mind that the console commands execute in their own separate app process and run independently from the main `serve` command (aka. hook and realtime events between different processes are not shared with one another).
 
-* * *
+---
 
 [Prev: Rendering templates](#js-rendering-templates) [Next: Sending HTTP requests](#js-sending-http-requests)
 
@@ -4258,9 +4586,9 @@ Extend with JavaScript - Sending HTTP requests
 
 Sending HTTP requests
 
-*   [Overview](#js-sending-http-requests-overview)
-    *   [multipart/form-data requests](#js-sending-http-requests-multipartform-data-requests)
-*   [Limitations](#js-sending-http-requests-limitations)
+- [Overview](#js-sending-http-requests-overview)
+  - [multipart/form-data requests](#js-sending-http-requests-multipartform-data-requests)
+- [Limitations](#js-sending-http-requests-limitations)
 
 ### [Overview](#js-sending-http-requests-overview)
 
@@ -4272,42 +4600,42 @@ Below is a list with all currently supported config options and their defaults.
 ```javascript
 // throws on timeout or network connectivity error
 const res = $http.send({
-    url:     "",
-    method:  "GET",
-    body:    "", // ex. JSON.stringify({"test": 123}) or new FormData()
-    headers: {}, // ex. {"content-type": "application/json"}
-    timeout: 120, // in seconds
+  url: '',
+  method: 'GET',
+  body: '', // ex. JSON.stringify({"test": 123}) or new FormData()
+  headers: {}, // ex. {"content-type": "application/json"}
+  timeout: 120 // in seconds
 })
 
-console.log(res.headers)    // the response headers (ex. res.headers['X-Custom'][0])
-console.log(res.cookies)    // the response cookies (ex. res.cookies.sessionId.value)
+console.log(res.headers) // the response headers (ex. res.headers['X-Custom'][0])
+console.log(res.cookies) // the response cookies (ex. res.cookies.sessionId.value)
 console.log(res.statusCode) // the response HTTP status code
-console.log(res.body)       // the response body as plain bytes array
-console.log(res.json)       // the response body as parsed json array or map
+console.log(res.body) // the response body as plain bytes array
+console.log(res.json) // the response body as parsed json array or map
 ```
 
 Here is an example that will enrich a single book record with some data based on its ISBN details from openlibrary.org.
 
 ```javascript
-onRecordCreateRequest((e) => {
-    let isbn = e.record.get("isbn");
+onRecordCreateRequest(e => {
+  let isbn = e.record.get('isbn')
 
-    // try to update with the published date from the openlibrary API
-    try {
-        const res = $http.send({
-            url: "https://openlibrary.org/isbn/" + isbn + ".json",
-            headers: {"content-type": "application/json"}
-        })
+  // try to update with the published date from the openlibrary API
+  try {
+    const res = $http.send({
+      url: 'https://openlibrary.org/isbn/' + isbn + '.json',
+      headers: { 'content-type': 'application/json' }
+    })
 
-        if (res.statusCode == 200) {
-            e.record.set("published", res.json.publish_date)
-        }
-    } catch (err) {
-        e.app.logger().error("Failed to retrieve book data", "error", err);
+    if (res.statusCode == 200) {
+      e.record.set('published', res.json.publish_date)
     }
+  } catch (err) {
+    e.app.logger().error('Failed to retrieve book data', 'error', err)
+  }
 
-    return e.next()
-}, "books")
+  return e.next()
+}, 'books')
 ```
 
 ##### [multipart/form-data requests](#js-sending-http-requests-multipartform-data-requests)
@@ -4317,16 +4645,16 @@ In order to send `multipart/form-data` requests (ex. uploading files) the reques
 PocketBase JSVM's `FormData` has the same APIs as its [browser equivalent](https://developer.mozilla.org/en-US/docs/Web/API/FormData) with the main difference that for file values instead of `Blob` it accepts [`$filesystem.File`](/jsvm/modules/_filesystem.html).
 
 ```javascript
-const formData = new FormData();
+const formData = new FormData()
 
-formData.append("title", "Hello world!")
-formData.append("documents", $filesystem.fileFromBytes("doc1", "doc1.txt"))
-formData.append("documents", $filesystem.fileFromBytes("doc2", "doc2.txt"))
+formData.append('title', 'Hello world!')
+formData.append('documents', $filesystem.fileFromBytes('doc1', 'doc1.txt'))
+formData.append('documents', $filesystem.fileFromBytes('doc2', 'doc2.txt'))
 
 const res = $http.send({
-    url:    "https://...",
-    method: "POST",
-    body:   formData,
+  url: 'https://...',
+  method: 'POST',
+  body: formData
 })
 
 console.log(res.statusCode)
@@ -4338,7 +4666,7 @@ As of now there is no support for streamed responses or server-sent events (SSE)
 
 For this and other more advanced use cases you'll have to [extend PocketBase with Go](/docs/go-overview/).
 
-* * *
+---
 
 [Prev: Console commands](#js-console-commands) [Next: Realtime messaging](#js-realtime)
 
@@ -4408,7 +4736,7 @@ await pb.realtime.subscribe('example', (e) {
 })
 ```
 
-* * *
+---
 
 [Prev: Sending HTTP requests](#js-sending-http-requests) [Next: Filesystem](#js-filesystem)
 
@@ -4432,9 +4760,9 @@ Below are listed some of the most common operations but you can find more detail
 
 Always make sure to call `close()` at the end for both the created filesystem instance and the retrieved file readers to prevent leaking resources.
 
-*   [Reading files](#js-filesystem-reading-files)
-*   [Saving files](#js-filesystem-saving-files)
-*   [Deleting files](#js-filesystem-deleting-files)
+- [Reading files](#js-filesystem-reading-files)
+- [Saving files](#js-filesystem-saving-files)
+- [Deleting files](#js-filesystem-deleting-files)
 
 ### [Reading files](#js-filesystem-reading-files)
 
@@ -4445,25 +4773,25 @@ To retrieve multiple files matching a specific _prefix_ you can use [`list(prefi
 The below code shows a minimal example how to retrieve the content of a single record file as string.
 
 ```javascript
-let record = $app.findAuthRecordByEmail("users", "test@example.com")
+let record = $app.findAuthRecordByEmail('users', 'test@example.com')
 
 // construct the full file key by concatenating the record storage path with the specific filename
-let avatarKey = record.baseFilesPath() + "/" + record.get("avatar")
+let avatarKey = record.baseFilesPath() + '/' + record.get('avatar')
 
-let fsys, reader, content;
+let fsys, reader, content
 
 try {
-    // initialize the filesystem
-    fsys = $app.newFilesystem();
+  // initialize the filesystem
+  fsys = $app.newFilesystem()
 
-    // retrieve a file reader for the avatar key
-    reader = fsys.getReader(avatarKey)
+  // retrieve a file reader for the avatar key
+  reader = fsys.getReader(avatarKey)
 
-    // copy as plain string
-    content = toString(reader)
+  // copy as plain string
+  content = toString(reader)
 } finally {
-    reader?.close();
-    fsys?.close();
+  reader?.close()
+  fsys?.close()
 }
 ```
 
@@ -4471,24 +4799,24 @@ try {
 
 There are several methods to save _(aka. write/upload)_ files depending on the available file content source:
 
-*   [`upload(content, key)`](/jsvm/interfaces/filesystem.System.html#upload)
-*   [`uploadFile(file, key)`](/jsvm/interfaces/filesystem.System.html#uploadFile)
-*   [`uploadMultipart(mfh, key)`](/jsvm/interfaces/filesystem.System.html#uploadMultipart)
+- [`upload(content, key)`](/jsvm/interfaces/filesystem.System.html#upload)
+- [`uploadFile(file, key)`](/jsvm/interfaces/filesystem.System.html#uploadFile)
+- [`uploadMultipart(mfh, key)`](/jsvm/interfaces/filesystem.System.html#uploadMultipart)
 
 Most users rarely will have to use the above methods directly because for collection records the file persistence is handled transparently when saving the record model (it will also perform size and MIME type validation based on the collection `file` field options). For example:
 
 ```javascript
-let record = $app.findRecordById("articles", "RECORD_ID")
+let record = $app.findRecordById('articles', 'RECORD_ID')
 
 // Other available File factories
 // - $filesystem.fileFromBytes(content, name)
 // - $filesystem.fileFromURL(url)
 // - $filesystem.fileFromMultipart(mfh)
-let file = $filesystem.fileFromPath("/local/path/to/file")
+let file = $filesystem.fileFromPath('/local/path/to/file')
 
 // set new file (can be single or array of File values)
 // (if the record has an old file it is automatically deleted on successful save)
-record.set("yourFileField", file)
+record.set('yourFileField', file)
 
 $app.save(record)
 ```
@@ -4500,20 +4828,20 @@ Files can be deleted from the storage filesystem using [`delete(key)`](/jsvm/int
 Similar to the previous section, most users rarely will have to use the `delete` file method directly because for collection records the file deletion is handled transparently when removing the existing filename from the record model (this also ensure that the db entry referencing the file is also removed). For example:
 
 ```javascript
-let record = $app.findRecordById("articles", "RECORD_ID")
+let record = $app.findRecordById('articles', 'RECORD_ID')
 
 // if you want to "reset" a file field (aka. deleting the associated single or multiple files)
 // you can set it to null
-record.set("yourFileField", null)
+record.set('yourFileField', null)
 
 // OR if you just want to remove individual file(s) from a multiple file field you can use the "-" modifier
 // (the value could be a single filename string or slice of filename strings)
-record.set("yourFileField-", "example_52iWbGinWd.txt")
+record.set('yourFileField-', 'example_52iWbGinWd.txt')
 
 $app.save(record)
 ```
 
-* * *
+---
 
 [Prev: Realtime messaging](#js-realtime) [Next: Logging](#js-logging)
 
@@ -4531,20 +4859,20 @@ Logging
 
 For better performance and to minimize blocking on hot paths, logs are written with debounce and on batches:
 
-*   3 seconds after the last debounced log write
-*   when the batch threshold is reached (currently 200)
-*   right before app termination to attempt saving everything from the existing logs queue
+- 3 seconds after the last debounced log write
+- when the batch threshold is reached (currently 200)
+- right before app termination to attempt saving everything from the existing logs queue
 
-*   [Logger methods](#js-logging-logger-methods)
-    *   [debug(message, attrs...)](#js-logging-debugmessage-attrs-)
-    *   [info(message, attrs...)](#js-logging-infomessage-attrs-)
-    *   [warn(message, attrs...)](#js-logging-warnmessage-attrs-)
-    *   [error(message, attrs...)](#js-logging-errormessage-attrs-)
-    *   [with(attrs...)](#js-logging-withattrs-)
-    *   [withGroup(name)](#js-logging-withgroupname)
-*   [Logs settings](#js-logging-logs-settings)
-*   [Custom log queries](#js-logging-custom-log-queries)
-*   [Intercepting logs write](#js-logging-intercepting-logs-write)
+- [Logger methods](#js-logging-logger-methods)
+  - [debug(message, attrs...)](#js-logging-debugmessage-attrs-)
+  - [info(message, attrs...)](#js-logging-infomessage-attrs-)
+  - [warn(message, attrs...)](#js-logging-warnmessage-attrs-)
+  - [error(message, attrs...)](#js-logging-errormessage-attrs-)
+  - [with(attrs...)](#js-logging-withattrs-)
+  - [withGroup(name)](#js-logging-withgroupname)
+- [Logs settings](#js-logging-logs-settings)
+- [Custom log queries](#js-logging-custom-log-queries)
+- [Intercepting logs write](#js-logging-intercepting-logs-write)
 
 ### [Logger methods](#js-logging-logger-methods)
 
@@ -4553,49 +4881,39 @@ All standard [`slog.Logger`](/jsvm/interfaces/slog.Logger.html) methods are avai
 ##### [debug(message, attrs...)](#js-logging-debugmessage-attrs-)
 
 ```javascript
-$app.logger().debug("Debug message!")
+$app.logger().debug('Debug message!')
 
-$app.logger().debug(
-    "Debug message with attributes!",
-    "name", "John Doe",
-    "id", 123,
-)
+$app
+  .logger()
+  .debug('Debug message with attributes!', 'name', 'John Doe', 'id', 123)
 ```
 
 ##### [info(message, attrs...)](#js-logging-infomessage-attrs-)
 
 ```javascript
-$app.logger().info("Info message!")
+$app.logger().info('Info message!')
 
-$app.logger().info(
-    "Info message with attributes!",
-    "name", "John Doe",
-    "id", 123,
-)
+$app
+  .logger()
+  .info('Info message with attributes!', 'name', 'John Doe', 'id', 123)
 ```
 
 ##### [warn(message, attrs...)](#js-logging-warnmessage-attrs-)
 
 ```javascript
-$app.logger().warn("Warning message!")
+$app.logger().warn('Warning message!')
 
-$app.logger().warn(
-    "Warning message with attributes!",
-    "name", "John Doe",
-    "id", 123,
-)
+$app
+  .logger()
+  .warn('Warning message with attributes!', 'name', 'John Doe', 'id', 123)
 ```
 
 ##### [error(message, attrs...)](#js-logging-errormessage-attrs-)
 
 ```javascript
-$app.logger().error("Error message!")
+$app.logger().error('Error message!')
 
-$app.logger().error(
-    "Error message with attributes!",
-    "id", 123,
-    "error", err,
-)
+$app.logger().error('Error message with attributes!', 'id', 123, 'error', err)
 ```
 
 ##### [with(attrs...)](#js-logging-withattrs-)
@@ -4603,13 +4921,13 @@ $app.logger().error(
 `with(atrs...)` creates a new local logger that will "inject" the specified attributes with each following log.
 
 ```javascript
-const l = $app.logger().with("total", 123)
+const l = $app.logger().with('total', 123)
 
 // results in log with data {"total": 123}
-l.info("message A")
+l.info('message A')
 
 // results in log with data {"total": 123, "name": "john"}
-l.info("message B", "name", "john")
+l.info('message B', 'name', 'john')
 ```
 
 ##### [withGroup(name)](#js-logging-withgroupname)
@@ -4617,10 +4935,10 @@ l.info("message B", "name", "john")
 `withGroup(name)` creates a new local logger that wraps all logs attributes under the specified group name.
 
 ```javascript
-const l = $app.logger().withGroup("sub")
+const l = $app.logger().withGroup('sub')
 
 // results in log with data {"sub": { "total": 123 }}
-l.info("message A", "total", 123)
+l.info('message A', 'total', 123)
 ```
 
 ### [Logs settings](#js-logging-logs-settings)
@@ -4634,23 +4952,26 @@ You can control various log settings like logs retention period, minimal log lev
 The logs are usually meant to be filtered from the UI but if you want to programmatically retrieve and filter the stored logs you can make use of the [`$app.logQuery()`](/jsvm/functions/_app.logQuery.html) query builder method. For example:
 
 ```javascript
-let logs = arrayOf(new DynamicModel({
-    id:      "",
-    created: "",
-    message: "",
-    level:   0,
-    data:    {},
-}))
+let logs = arrayOf(
+  new DynamicModel({
+    id: '',
+    created: '',
+    message: '',
+    level: 0,
+    data: {}
+  })
+)
 
 // see https://pocketbase.io/docs/js-database/#query-builder
-$app.logQuery().
-    // target only debug and info logs
-    andWhere($dbx.in("level", -4, 0)).
-    // the data column is serialized json object and could be anything
-    andWhere($dbx.exp("json_extract(data, '$.type') = 'request'")).
-    orderBy("created DESC").
-    limit(100).
-    all(logs)
+$app
+  .logQuery()
+  // target only debug and info logs
+  .andWhere($dbx.in('level', -4, 0))
+  // the data column is serialized json object and could be anything
+  .andWhere($dbx.exp("json_extract(data, '$.type') = 'request'"))
+  .orderBy('created DESC')
+  .limit(100)
+  .all(logs)
 ```
 
 ### [Intercepting logs write](#js-logging-intercepting-logs-write)
@@ -4658,21 +4979,20 @@ $app.logQuery().
 If you want to modify the log data before persisting in the database or to forward it to an external system, then you can listen for changes of the `_logs` table by attaching to the [base model hooks](#js-event-hooks). For example:
 
 ```javascript
-onModelCreate((e) => {
-    // print log model fields
-    console.log(e.model.id)
-    console.log(e.model.created)
-    console.log(e.model.level)
-    console.log(e.model.message)
-    console.log(e.model.data)
+onModelCreate(e => {
+  // print log model fields
+  console.log(e.model.id)
+  console.log(e.model.created)
+  console.log(e.model.level)
+  console.log(e.model.message)
+  console.log(e.model.data)
 
-    e.next()
-}, "_logs")
+  e.next()
+}, '_logs')
 ```
 
-* * *
+---
 
 [Prev: Filesystem](#js-filesystem) [Next: Types reference](/jsvm/index.html)
 
 ---
-
