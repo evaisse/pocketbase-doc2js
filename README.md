@@ -1,15 +1,17 @@
-# PocketBase Documentation Crawler
+# PocketBase Documentation Compiler
 
-A Node.js crawler that scrapes PocketBase JavaScript documentation and converts it to markdown files.
+A Node.js tool that compiles all PocketBase JavaScript documentation into a single markdown file.
 
 ## Features
 
 - Crawls PocketBase JavaScript documentation from https://pocketbase.io/docs/js-overview/
 - Extracts page content from `.page-content` div elements
-- Converts HTML content to clean markdown format
-- Handles code blocks by converting `div.code-wrapper` elements to pre blocks
+- Converts HTML content to clean markdown format with proper code block formatting
+- Handles code blocks by converting `div.code-wrapper` elements to indented code blocks
 - Automatically discovers and crawls all JS documentation pages (matching `/docs/js-*/` pattern)
-- Saves all documentation as markdown files in the `./jsdocs` directory
+- Compiles all documentation into a single markdown file with table of contents
+- Includes caching mechanism to avoid redundant requests (24-hour cache duration)
+- Converts internal links to anchors for easy navigation within the single document
 
 ## Installation
 
@@ -19,31 +21,41 @@ npm install
 
 ## Usage
 
-Run the crawler:
+Run the documentation compiler:
 
 ```bash
-node tools/pocketbase-docs-crawler.js
+npm run crawl
+```
+
+Force refresh (ignore cache):
+
+```bash
+npm run crawl:force
 ```
 
 ## Output
 
-The crawler will create a `./jsdocs` directory containing markdown files for each documentation page:
+The tool creates a `./jsdocs` directory containing:
 
-- `js-overview.md` - JavaScript SDK overview
-- `js-event-hooks.md` - Event hooks documentation
-- `js-routing.md` - Routing documentation
-- `js-database.md` - Database operations
-- `js-records.md` - Record management
-- `js-collections.md` - Collection management
-- `js-migrations.md` - Database migrations
-- `js-jobs-scheduling.md` - Job scheduling
-- `js-sending-emails.md` - Email functionality
-- `js-rendering-templates.md` - Template rendering
-- `js-console-commands.md` - Console commands
-- `js-sending-http-requests.md` - HTTP requests
-- `js-realtime.md` - Realtime features
-- `js-filesystem.md` - Filesystem operations
-- `js-logging.md` - Logging functionality
+- `pocketbase-js-sdk-complete.md` - Complete documentation with all sections combined
+
+The single file includes:
+- Table of Contents with links to all sections
+- JavaScript SDK overview
+- Event hooks documentation
+- Routing documentation
+- Database operations
+- Record management
+- Collection management
+- Database migrations
+- Job scheduling
+- Email functionality
+- Template rendering
+- Console commands
+- HTTP requests
+- Realtime features
+- Filesystem operations
+- Logging functionality
 
 ## Dependencies
 
@@ -63,9 +75,10 @@ The crawler will create a `./jsdocs` directory containing markdown files for eac
 
 ## Script Structure
 
-- `ensureDirectory()` - Creates the output directory if it doesn't exist
-- `extractPageContent()` - Extracts and preprocesses page content from the DOM
-- `saveMarkdown()` - Converts HTML to markdown and saves to file
-- `crawlPage()` - Crawls a single documentation page
+- `ensureDirectory()` - Creates the output and cache directories if they don't exist
+- `extractPageContent()` - Extracts and preprocesses page content from the DOM, handling section IDs for anchors
+- `crawlPage()` - Crawls a single documentation page with caching support
 - `findJsDocLinks()` - Discovers all JS documentation links on a page
-- `main()` - Orchestrates the entire crawling process
+- `generateTableOfContents()` - Creates a table of contents with anchor links
+- `getCachedContent()` / `setCachedContent()` - Cache management functions
+- `main()` - Orchestrates the entire crawling and compilation process
