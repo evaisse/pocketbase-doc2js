@@ -11,27 +11,25 @@ const turndownService = new TurndownService({
 
 // Handle div.code-wrapper elements
 turndownService.addRule('codeWrapper', {
-  filter: function(node) {
+  filter: function (node) {
     return node.nodeName === 'DIV' && node.classList && node.classList.contains('code-wrapper');
   },
-  replacement: function(content, node) {
+  replacement: function (content, node) {
+    // Convert to indented code block with 4 spaces per line, preserving empty lines
     const codeText = node.innerText || node.textContent || '';
     if (!codeText.trim()) return '';
-    // Convert to indented code block with 4 spaces per line, preserving empty lines
-    const lines = codeText.split('\n');
-    const indentedCode = lines.map(line => '    ' + line).join('\n');
-    return '\n\n' + indentedCode + '\n\n';
+    return "```javascript\n" + codeText + "\n```\n";
   }
 });
 
 // Handle pre elements (convert to indented code blocks)
 turndownService.addRule('preElements', {
   filter: 'pre',
-  replacement: function(content, node) {
+  replacement: function (content, node) {
     // Use innerHTML to preserve line breaks, then decode HTML entities
     let html = node.innerHTML;
     if (!html.trim()) return '';
-    
+
     // Decode HTML entities while preserving line breaks
     const textWithLineBreaks = html
       .replace(/&lt;/g, '<')
@@ -39,11 +37,10 @@ turndownService.addRule('preElements', {
       .replace(/&quot;/g, '"')
       .replace(/&#x27;/g, "'")
       .replace(/&amp;/g, '&');
-    
+
     // Convert to indented code block with 4 spaces per line
     const lines = textWithLineBreaks.split('\n');
-    const indentedCode = lines.map(line => '    ' + line).join('\n');
-    return '\n\n' + indentedCode + '\n\n';
+    return "```javascript\n" + lines.join('\n') + "\n```\n";
   }
 });
 
@@ -61,7 +58,7 @@ turndownService.addRule('codeBlocks', {
     // Use innerHTML to preserve line breaks, then decode HTML entities
     let html = codeElement.innerHTML;
     if (!html.trim()) return '';
-    
+
     // Decode HTML entities while preserving line breaks
     const textWithLineBreaks = html
       .replace(/&lt;/g, '<')
@@ -69,22 +66,21 @@ turndownService.addRule('codeBlocks', {
       .replace(/&quot;/g, '"')
       .replace(/&#x27;/g, "'")
       .replace(/&amp;/g, '&');
-    
+
     // Convert to indented code block with 4 spaces per line
     const lines = textWithLineBreaks.split('\n');
-    const indentedCode = lines.map(line => '    ' + line).join('\n');
-    return '\n\n' + indentedCode + '\n\n';
+    return "```javascript\n" + lines.join('\n') + "\n```\n";
   }
 });
 
 // Add rule to convert PocketBase links to internal anchors
 turndownService.addRule('pocketbaseLinks', {
-  filter: function(node) {
+  filter: function (node) {
     return node.nodeName === 'A' && node.getAttribute('href');
   },
-  replacement: function(content, node) {
+  replacement: function (content, node) {
     let href = node.getAttribute('href');
-    
+
     // Convert PocketBase JS documentation links to internal anchors
     if (href) {
       // Match absolute URLs
@@ -105,7 +101,7 @@ turndownService.addRule('pocketbaseLinks', {
         href = href;
       }
     }
-    
+
     // Return markdown link
     return '[' + content + '](' + href + ')';
   }
@@ -130,14 +126,14 @@ function getCacheKey(url) {
 
 async function getCachedContent(url) {
   if (FORCE_REFRESH) return null;
-  
+
   const cacheKey = getCacheKey(url);
   const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
-  
+
   try {
     const cacheData = await fs.readFile(cacheFile, 'utf8');
     const cached = JSON.parse(cacheData);
-    
+
     // Check if cache is still valid
     const now = Date.now();
     if (now - cached.timestamp < CACHE_DURATION) {
@@ -155,16 +151,16 @@ async function getCachedContent(url) {
 
 async function setCachedContent(url, content) {
   await ensureDirectory(CACHE_DIR);
-  
+
   const cacheKey = getCacheKey(url);
   const cacheFile = path.join(CACHE_DIR, `${cacheKey}.json`);
-  
+
   const cacheData = {
     url: url,
     timestamp: Date.now(),
     content: content
   };
-  
+
   try {
     await fs.writeFile(cacheFile, JSON.stringify(cacheData, null, 2), 'utf8');
   } catch (error) {
@@ -227,7 +223,7 @@ async function crawlPage(browser, url, sectionId) {
   try {
     console.log(`Crawling: ${url}`);
     await page.goto(url, { waitUntil: 'networkidle' });
-    
+
     const content = await extractPageContent(page, sectionId);
     if (content) {
       // Cache the raw HTML content
@@ -249,7 +245,7 @@ async function findJsDocLinks(page) {
   return await page.evaluate(() => {
     const links = document.querySelectorAll('a');
     const uniqueUrls = new Set();
-    
+
     links.forEach(link => {
       const href = link.getAttribute('href');
       if (href) {
@@ -259,47 +255,47 @@ async function findJsDocLinks(page) {
         }
       }
     });
-    
+
     return Array.from(uniqueUrls);
   });
 }
 
 function generateTableOfContents(sections) {
   let toc = '# Table of Contents\n\n';
-  
+
   sections.forEach((section, index) => {
     const indent = index === 0 ? '' : '  ';
     toc += `${indent}- [${section.title}](#${section.id})\n`;
   });
-  
+
   return toc + '\n';
 }
 
 async function main() {
   await ensureDirectory('./jsdocs');
   await ensureDirectory(CACHE_DIR);
-  
+
   if (FORCE_REFRESH) {
     console.log('Force refresh enabled - ignoring cache');
   }
-  
+
   const browser = await chromium.launch({ headless: true });
-  
+
   try {
     const mainUrl = 'https://pocketbase.io/docs/js-overview/';
     const mainPage = await browser.newPage();
-    
+
     console.log('Starting crawl of PocketBase JS documentation...');
     await mainPage.goto(mainUrl, { waitUntil: 'networkidle' });
-    
+
     // Collect all pages to crawl
     const sections = [
       { id: 'js-overview', url: mainUrl, title: 'JavaScript SDK Overview' }
     ];
-    
+
     const jsDocLinks = await findJsDocLinks(mainPage);
     console.log(`Found ${jsDocLinks.length} JS documentation pages`);
-    
+
     // Map URLs to section info
     const sectionTitles = {
       'js-event-hooks': 'Event Hooks',
@@ -317,7 +313,7 @@ async function main() {
       'js-filesystem': 'Filesystem',
       'js-logging': 'Logging'
     };
-    
+
     for (const link of jsDocLinks) {
       const pageName = link.match(/\/docs\/(js-[^\/]*)/)?.[1];
       if (pageName && pageName !== 'js-overview') {
@@ -328,7 +324,7 @@ async function main() {
         });
       }
     }
-    
+
     // Sort sections in a logical order
     const sectionOrder = [
       'js-overview',
@@ -347,18 +343,18 @@ async function main() {
       'js-filesystem',
       'js-logging'
     ];
-    
+
     sections.sort((a, b) => {
       const aIndex = sectionOrder.indexOf(a.id);
       const bIndex = sectionOrder.indexOf(b.id);
       return aIndex - bIndex;
     });
-    
+
     // Compile all content
     let fullDocument = '# PocketBase JavaScript SDK Documentation\n\n';
     fullDocument += generateTableOfContents(sections);
     fullDocument += '\n---\n\n';
-    
+
     for (const section of sections) {
       const content = await crawlPage(browser, section.url, section.id);
       if (content) {
@@ -369,15 +365,15 @@ async function main() {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
-    
+
     await mainPage.close();
-    
+
     // Save the complete document
     const outputPath = path.join('./jsdocs', 'pocketbase-js-sdk-complete.md');
     await fs.writeFile(outputPath, fullDocument, 'utf8');
     console.log(`\nSaved complete documentation to: ${outputPath}`);
     console.log('Crawling completed successfully!');
-    
+
   } catch (error) {
     console.error('Error during crawling:', error);
   } finally {
